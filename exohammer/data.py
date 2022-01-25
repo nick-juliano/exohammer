@@ -7,10 +7,31 @@ Created on Tue Aug  3 11:01:22 2021
 """
 
 class data:
+    """
+        Data Class
+
+        To be initialized and passed into a **planetary_system** object
+    """
     def __init__(self, mstar, 
                  ttvs,              #[epoch, measured, error], 
                  rvs,               #[bjd, mnvel, errvel], 
                  orbital_elements):
+        """
+            Initialize **data** object
+
+            To be passed into a **planetary_system** object after initialization
+
+            Parameters
+            ----------
+            mstar : float
+                Mass of the host star in units of solar mass
+            ttvs : list
+                ttv measurements in nested-list format [ [[epoch_i],...] ,
+                                                        [[tt_i],...],
+                                                        [[error_i],...]] ]
+            rvs : list
+                rv measurements in nested-list format [[bjd],[velocity],[error]]
+            """
         
         import numpy as np
         self.mstar      = mstar

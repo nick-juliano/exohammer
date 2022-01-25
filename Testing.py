@@ -16,7 +16,26 @@ run = exo.mcmc_run.mcmc_run(kepler_36, data)
 
 # lnprob=exo.prob_functions.lnprob(params, system)
 # print(lnprob)
-run.explore(100000, thin=1, verbose=True)
+niter_total=10000000
+chopper=1000
+chopped=int(niter_total/chopper)
+run.explore(chopped, thin=10, verbose=True)
+
+for i in range(chopper):
+	print(str(i))
+	run.explore_again(chopped)
+	if i%100==0:
+
+		store = exo.store.store_run(run)
+		store.store()
+
+		run.plot_chains()
+		run.plot_rvs()
+		run.plot_ttvs()
+		run.autocorr()
+		run.summarize()
+		run.plot_corner()
+print(run.theta_max)
 
 store = exo.store.store_run(run)
 store.store()
@@ -27,3 +46,4 @@ run.plot_ttvs()
 run.autocorr()
 run.summarize()
 run.plot_corner()
+

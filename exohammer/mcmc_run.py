@@ -8,9 +8,27 @@ Created on Tue Aug  3 11:04:17 2021
 
 
 class mcmc_run:
+	"""
+    **mcmc_run** class
+
+    The primary object of *exohammer*. Once all other defining values have been passed into this class, the mcmc_run object can then perform the Bayesian analysis of the the system.
+
+    """
 	import emcee
 
 	def __init__(self, planetary_system, data, lnprob=None):
+		"""
+        Initialize **mcmc_run** object
+
+        Parameters
+        ----------
+        planetary_system : object
+            exohammer.planetary_system.planetary_system object
+        data : object
+            exohammer.data.data object
+        lnprob : function
+            probability function. Must be of the format lnprob(theta, args). Optional (determined by initialize_prob.py if None)
+        """
 		import os
 		import datetime
 		import emcee
@@ -29,6 +47,26 @@ class mcmc_run:
 
 	def explore(self, iterations, thin=1, moves=[(emcee.moves.DEMove(), 0.8), (emcee.moves.DESnookerMove(), 0.2)],
 	            verbose=True, tune=True):
+		"""
+        Advances the ensemble
+
+        Parameters
+        ----------
+        iterations : int
+            The amount of steps to propose
+        thin : int
+            Use only every thin steps from the chain (default: 1)
+        moves : object
+            This can be a single move object, a list of moves,
+            or a “weighted” list of the form [(emcee.moves.StretchMove(), 0.1), ...].
+            When running, the sampler will randomly select a move from this list
+            (optionally with weights) for each proposal.
+            (default: [(emcee.moves.DEMove(), 0.8), (emcee.moves.DESnookerMove(), 0.2)])
+        verbose : bool
+            If True, a progress bar will be shown as the sampler progresses. (default: True)
+        tune : bool
+            If True, the parameters of some moves will be automatically tuned. (default: True)
+        """
 		import numpy as np
 		walk = self.system.ndim * 3
 		self.nwalkers = int(walk) if ((int(walk) % 2) == 0) else int(walk) + 1
@@ -37,7 +75,7 @@ class mcmc_run:
 		self.niter = int(iterations - self.nburnin)
 		self.moves = moves
 		self.discard = 0
-
+		self.tune=tune
 		lnprob = self.system.lnprob
 		ndim = self.system.ndim
 		nwalkers = self.nwalkers
@@ -71,24 +109,69 @@ class mcmc_run:
 
 		sampler_to_theta_max(self)
 
+	def explore_again(self, niter, verbose=True):
+		import numpy as np
+		print("Running production..." + str(niter) + " steps")
+		self.niter+=niter
+		pos, prob, state = self.sampler.run_mcmc(self.pos, niter, thin=self.thin, progress=verbose, tune=self.tune)
+		self.pos=pos #np.append(self.pos, pos.reshape(len(pos),len(pos[-1])), axis=0)
+		self.prob=prob
+		self.state=state
 
+		def sampler_to_theta_max(self):
+			import numpy as np
+			sampler = self.sampler
+			samples = sampler.get_chain(flat=True, thin=self.thin)
+			self.samples = samples
+			self.theta_max = samples[np.argmax(sampler.get_log_prob(flat=True, thin=self.thin))]
 
-	def plot_corner(self):
+		sampler_to_theta_max(self)
+
+	def plot_corner(self, samples=None, save=True):
+		"""
+        Generates a corner plot and optionally saves it to the output path.
+
+        Parameters
+        ----------
+        samples : list
+            Samples from an mcmc_run.explore() run.
+            It is recommended to keep samples=None unless you are
+            attempting to plot a poorly-pickled previous run.
+        save : bool
+            If True, saves the corner plot to the run's output path.
+		"""
 		import matplotlib.pyplot as plt
 		import corner
 		filename = self.output_path + "corner_" + self.date + '.png'
-		samples = self.samples
+		if samples==None:
+			samples = self.samples
 		figure = corner.corner(samples, labels=self.system.variable_labels)
-		figure.savefig(filename)
+		if save == True:
+			figure.savefig(filename)
 		plt.show()
 
-	def plot_chains(self, discard=None):
+	def plot_chains(self, discard=None, samples=None, save=True):
+		"""
+        Generates a chain plot and optionally saves it to the output path.
+
+        Parameters
+        ----------
+        discard : int
+            The number of steps at the beginning of the run to omit from the plot (optional)
+        samples : list
+            Samples from an mcmc_run.explore() run.
+            It is recommended to keep samples=None unless you are
+            attempting to plot a poorly-pickled previous run.
+        save : bool
+            If True, saves the plot to the run's output path.
+		"""
 		import matplotlib.pyplot as plt
 		filename = self.output_path + "Chains_" + self.date + '.png'
 		# samples = self.samples
 		if discard == None:
 			discard = self.discard
-		samples = self.sampler.get_chain(discard=discard)
+		if samples == None:
+			samples = self.sampler.get_chain(discard=discard)
 		fig, axes = plt.subplots(len(self.system.variable_labels), figsize=(20, 30), sharex=True)
 		fig.suptitle('chains', fontsize=30)
 		for i in range(len(self.system.variable_labels)):
@@ -97,7 +180,8 @@ class mcmc_run:
 			ax.set_xlim(0, len(samples))
 			ax.set_ylabel(self.system.variable_labels[i])
 			ax.yaxis.set_label_coords(-0.1, 0.5)
-		plt.savefig(filename)
+		if save == True:
+			plt.savefig(filename)
 		plt.show()
 
 	def summarize(self):
@@ -172,8 +256,8 @@ class mcmc_run:
 
             """
 		summary = """
-            nwalkers: %i walkers with 
-            niter_total: %i total iterations, including a burn-in of %i, which was discarded.  
+            nwalkers: %i walkers
+            niter_total: %i total iterations  
 			nburnin: %i
             The resulting chain was thinned by a factor of %i
 
