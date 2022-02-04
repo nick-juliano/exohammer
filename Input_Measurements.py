@@ -154,6 +154,22 @@ orbital_elements_3body = {'mass_b'         : [mearth/msun,  10 * mearth/msun ],
                     'argument_c'     : [0.0,          360.0            ],
                     'mean_anomaly_c' : [0.0,          360.0            ]}
 
+# orbital_elements_4body = {'mass_b': [mearth / msun, 10 * mearth / msun],
+#                           'period_b': [13.849 - .05, 13.849 + .05],
+#                           'eccentricity_b': [0.00, 0.04],
+#                           'inclination_b': [90],
+#                           'longnode_b': [-45.0, 45.0],
+#                           'argument_b': [0.0, 360.0],
+#                           'mean_anomaly_b': [0.0, 360.0],
+#
+#                           'mass_c': [mearth / msun, 10 * mearth / msun],
+#                           'period_c': [16.2369 - .05, 16.2369 + .05],
+#                           'eccentricity_c': [0.00, 0.04],
+#                           'inclination_c': [90],
+#                           'longnode_c': [0.0],
+#                           'argument_c': [0.0, 360.0],
+#                           'mean_anomaly_c': [0.0, 360.0]}
+
 theta_max_2_mil = {'mass_b'         : [1.30930463e-05],   
                     'period_b'       : [1.38386888e+01],                
                     'eccentricity_b' : [3.09587269e-02],
@@ -198,7 +214,7 @@ donghong_elements = [4.6813098187, 13.8365700314, 0.0250513232, 90.4221451464, 0
 
 #mass, period, eccentricity, inclination, longnode, argument, mean_anomaly
 
-orbital_elements = {'mass_b'         : [mearth/msun,  10 * mearth/msun ],   
+orbital_elements_4body = {'mass_b'         : [mearth/msun,  10 * mearth/msun ],
                     'period_b'       : [13.849-.05,   13.849+.05       ],                
                     'eccentricity_b' : [0.00,         0.04             ],
                     'inclination_b'  : [90],
@@ -212,8 +228,15 @@ orbital_elements = {'mass_b'         : [mearth/msun,  10 * mearth/msun ],
                     'inclination_c'  : [90],
                     'longnode_c'     : [0.0                            ],
                     'argument_c'     : [0.0,          360.0            ],
-                    'mean_anomaly_c' : [0.0,          360.0            ]}
-                    
+                    'mean_anomaly_c' : [0.0,          360.0            ],
+
+                    'mass_d'         : [mearth/msun,  100 * mearth/msun ],
+                    'period_d'       : [50,  200],
+                    'eccentricity_d': [0.00],
+                    'inclination_d'  : [90.0],
+                    'longnode_d'     : [0.0],
+                    'argument_d'     : [0.0],
+                    'mean_anomaly_d' : [0.0,          360.0            ]}
                     
                     # 'mass_d'         : [mearth/msun,  10 * mearth/msun],   
                     # 'period_d'       : [165.,         175.      ],                
@@ -378,52 +401,52 @@ rv_102021=[[2456138.960111, #BJD
 
 #             [1.77129425e-04 1.73562394e+02 2.91959599e+01]
 
-orbital_elements_4body = {'mass_b'         : [1.29886699e-05],   
-                    'period_b'       : [1.38387336e+01],                
-                    'eccentricity_b' : [2.63012733e-02],
-                    'inclination_b'  : [90],
-                    'longnode_b'     : [1.80513783e-0],
-                    'argument_b'     : [8.24764736e+01],
-                    'mean_anomaly_b' : [2.29250502e+02],
-     
-                    'mass_c'         : [2.25381725e-05],   
-                    'period_c'       : [1.62402026e+01],                
-                    'eccentricity_c' : [3.18672839e-04],
-                    'inclination_c'  : [90],
-                    'longnode_c'     : [0.0],
-                    'argument_c'     : [2.45574895e+02],
-                    'mean_anomaly_c' : [1.98992221e+02],
-                    
-                    'mass_d'         : [1.77129425e-04],   
-                    'period_d'       : [1.73562394e+02],                
-                    'eccentricity_d' : [0.00],
-                    'inclination_d'  : [90.0],
-                    'longnode_d'     : [0.0],
-                    'argument_d'     : [0.0],
-                    'mean_anomaly_d' : [2.91959599e+01]}
-    
-    
-orbital_elements_4body = {'mass_b'         : [1.29886699e-05],   
-                    'period_b'       : [1.38387336e+01],                
-                    'eccentricity_b' : [2.63012733e-02],
-                    'inclination_b'  : [90],
-                    'longnode_b'     : [1.80513783e-0],
-                    'argument_b'     : [8.24764736e+01],
-                    'mean_anomaly_b' : [2.29250502e+02],
-     
-                    'mass_c'         : [2.25381725e-05],   
-                    'period_c'       : [1.62402026e+01],                
-                    'eccentricity_c' : [3.18672839e-04],
-                    'inclination_c'  : [90],
-                    'longnode_c'     : [0.0],
-                    'argument_c'     : [2.45574895e+02],
-                    'mean_anomaly_c' : [1.98992221e+02],
-                    
-                    'mass_d'         : [2.05222884e-04],   
-                    'period_d'       : [1.02942908e+02],                
-                    'eccentricity_d' : [4.99862651e-01],
-                    'inclination_d'  : [90.0],
-                    'longnode_d'     : [0.0],
-                    'argument_d'     : [2.38603276e+02],
-                    'mean_anomaly_d' : [9.05525762e+01]}
-    
+# orbital_elements_4body = {'mass_b'         : [1.29886699e-05],
+#                     'period_b'       : [1.38387336e+01],
+#                     'eccentricity_b' : [2.63012733e-02],
+#                     'inclination_b'  : [90],
+#                     'longnode_b'     : [1.80513783e-0],
+#                     'argument_b'     : [8.24764736e+01],
+#                     'mean_anomaly_b' : [2.29250502e+02],
+#
+#                     'mass_c'         : [2.25381725e-05],
+#                     'period_c'       : [1.62402026e+01],
+#                     'eccentricity_c' : [3.18672839e-04],
+#                     'inclination_c'  : [90],
+#                     'longnode_c'     : [0.0],
+#                     'argument_c'     : [2.45574895e+02],
+#                     'mean_anomaly_c' : [1.98992221e+02],
+#
+#                     'mass_d'         : [1.77129425e-04],
+#                     'period_d'       : [1.73562394e+02],
+#                     'eccentricity_d' : [0.00],
+#                     'inclination_d'  : [90.0],
+#                     'longnode_d'     : [0.0],
+#                     'argument_d'     : [0.0],
+#                     'mean_anomaly_d' : [2.91959599e+01]}
+#
+#
+# orbital_elements_4body = {'mass_b'         : [1.29886699e-05],
+#                     'period_b'       : [1.38387336e+01],
+#                     'eccentricity_b' : [2.63012733e-02],
+#                     'inclination_b'  : [90],
+#                     'longnode_b'     : [1.80513783e-0],
+#                     'argument_b'     : [8.24764736e+01],
+#                     'mean_anomaly_b' : [2.29250502e+02],
+#
+#                     'mass_c'         : [2.25381725e-05],
+#                     'period_c'       : [1.62402026e+01],
+#                     'eccentricity_c' : [3.18672839e-04],
+#                     'inclination_c'  : [90],
+#                     'longnode_c'     : [0.0],
+#                     'argument_c'     : [2.45574895e+02],
+#                     'mean_anomaly_c' : [1.98992221e+02],
+#
+#                     'mass_d'         : [2.05222884e-04],
+#                     'period_d'       : [1.02942908e+02],
+#                     'eccentricity_d' : [4.99862651e-01],
+#                     'inclination_d'  : [90.0],
+#                     'longnode_d'     : [0.0],
+#                     'argument_d'     : [2.38603276e+02],
+#                     'mean_anomaly_d' : [9.05525762e+01]}
+#

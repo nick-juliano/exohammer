@@ -167,7 +167,7 @@ def generate_planets(theta, system):
     
     from ttvfast import models
 
-    nplanets         = system.nplanets
+    nplanets         = system.nplanets_rvs
     fixed_labels     = system.fixed_labels
     fixed_values     = system.fixed
     variable_labels  = system.variable_labels
@@ -227,7 +227,7 @@ def model(theta, system):
         tmin             = system.tmin-dt
         tmax             = system.tmax+dt
         rvbjd            = system.rvbjd
-        nplanets         = system.nplanets_fit
+        nplanets_ttvs         = system.nplanets_ttvs
         planets          = generate_planets(theta, system)
         au_per_day       = 1731460
         
@@ -249,7 +249,7 @@ def model(theta, system):
             model_index = np.array(model_index[:trim])
             model_epoch = np.array(model_epoch[:trim])
             model_time  = np.array(model_time[:trim])
-            for i in range(nplanets):
+            for i in range(nplanets_ttvs):
                 idx        = np.where(model_index == float(i))
                 epoch_temp = np.copy(np.array(epoch[i]))
                 epoch_temp = epoch_temp[epoch_temp  <= max(model_epoch[idx])]

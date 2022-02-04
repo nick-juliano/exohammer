@@ -11,7 +11,7 @@ def model_both(theta, system):
     tmin             = system.tmin-dt
     tmax             = system.tmax+dt
     rvbjd            = system.rvbjd
-    nplanets         = system.nplanets_fit
+    nplanets         = system.nplanets_ttvs
     planets          = generate_planets(theta, system)
     au_per_day       = 1731460
     

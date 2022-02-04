@@ -7,14 +7,14 @@ Created on Tue Aug  3 11:02:01 2021
 """
 
 class planetary_system:
-    def __init__(self, nplanets_fit, orbital_elements, theta=None):
+    def __init__(self, nplanets_ttvs, nplanets_rvs, orbital_elements, theta=None):
         
         self.orbital_elements = orbital_elements
-        self.nplanets = int(len(orbital_elements)/7)
-        self.nplanets_fit = nplanets_fit #
-        
-        if theta!= None:
-            self.theta=theta
+        self.nplanets_rvs = nplanets_rvs
+        self.nplanets_ttvs = nplanets_ttvs
+
+        if type(theta) == list:
+            self.theta = theta
         def generate(self):
             import numpy as np
             """

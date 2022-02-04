@@ -38,12 +38,12 @@ def lnprob(theta, system):
         ttv_likelihood=0
         rv_likelihood=0
         
-        mod, meas, err, ep = trim(system.nplanets_fit, system.epoch, system.measured, ttmodel, system.error, flatten=False)
+        mod, meas, err, ep = trim(system.nplanets_ttvs, system.epoch, system.measured, ttmodel, system.error, flatten=False)
         obs=[]
         comp=[]
-        nplanets     = system.nplanets
-        nplanets_fit = system.nplanets_fit 
-        for i in range(nplanets_fit):
+        nplanets_rvs     = system.nplanets_rvs
+        nplanets_ttvs = system.nplanets_ttvs
+        for i in range(nplanets_ttvs):
             obs.append(meas[i])
             comp.append(mod[i])
         obs = flatten_list(obs)

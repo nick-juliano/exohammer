@@ -47,13 +47,13 @@ def lnprob(theta, system):
         rv_likelihood=0
         
         if epo is not None:
-            mod, meas, err, ep = trim(system.nplanets_fit, system.epoch, system.measured, ttmodel, system.error, flatten=False)
+            mod, meas, err, ep = trim(system.nplanets_ttvs, system.epoch, system.measured, ttmodel, system.error, flatten=False)
             obs=[]
             comp=[]
-            nplanets     = system.nplanets
-            nplanets_fit = system.nplanets_fit 
+            nplanets_rvs     = system.nplanets_rvs
+            nplanets_ttvs = system.nplanets_ttvs
 
-            for i in range(nplanets_fit):
+            for i in range(nplanets_ttvs):
                 obs.append(meas[i])
                 comp.append(mod[i])
             resid          = np.array(flatten_list(obs))-np.array(flatten_list(comp))

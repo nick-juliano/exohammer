@@ -12,7 +12,7 @@ mearth = const.M_earth.cgs.value  # grams
 msun = const.M_sun.cgs.value
 
 
-def plot_ttvs(nplanets, measured, epoch, error, model, model_epoch, filename=None):
+def plot_ttvs(nplanets, measured, epoch, error, model, model_epoch, filename=None, silent=False):
 	import matplotlib.pyplot as plt
 	from exohammer.utilities import ttvs
 
@@ -33,10 +33,11 @@ def plot_ttvs(nplanets, measured, epoch, error, model, model_epoch, filename=Non
 		ax.legend(fontsize=16)
 	if filename != None:
 		fig.savefig(filename)
-	plt.show()
+	if silent != True:
+		plt.show()
 
 
-def plot_rvs(bjd, rv, rv_err, rv_model, filename):
+def plot_rvs(bjd, rv, rv_err, rv_model, filename, silent=False):
 	import matplotlib.pyplot as plt
 
 	rv_resid = rv - rv_model
@@ -44,7 +45,7 @@ def plot_rvs(bjd, rv, rv_err, rv_model, filename):
 	fig1 = plt.figure(1)
 	frame1 = fig1.add_axes((.1, .3, .8, .6))
 	frame1.set_title('RVs')
-
+	frame1.set_ylabel('')
 	plt.errorbar(bjd, rv, rv_err, fmt='o', label='RVs From Keck Data')
 	plt.plot(bjd, rv_model, 'or', label='best fit')  # Best fit model
 	plt.ylabel('RV [m/s]')
@@ -61,4 +62,5 @@ def plot_rvs(bjd, rv, rv_err, rv_model, filename):
 	frame2.set_yticks([-20, -10, 0, 10, 20])
 	if filename != None:
 		plt.savefig(filename)
-	plt.show()
+	if silent != True:
+		plt.show()
