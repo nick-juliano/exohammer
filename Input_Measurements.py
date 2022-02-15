@@ -230,8 +230,8 @@ orbital_elements_4body = {'mass_b'         : [mearth/msun,  10 * mearth/msun ],
                     'argument_c'     : [0.0,          360.0            ],
                     'mean_anomaly_c' : [0.0,          360.0            ],
 
-                    'mass_d'         : [mearth/msun,  100 * mearth/msun ],
-                    'period_d'       : [50,  200],
+                    'mass_d'         : [mearth/msun,  200 * mearth/msun ],
+                    'period_d'       : [40,  300],
                     'eccentricity_d': [0.00],
                     'inclination_d'  : [90.0],
                     'longnode_d'     : [0.0],
@@ -247,6 +247,37 @@ orbital_elements_4body = {'mass_b'         : [mearth/msun,  10 * mearth/msun ],
                     # 'mean_anomaly_d' : [0.0,          360.0            ]}
 
 
+orbital_elements_5body = {'mass_b'         : [mearth/msun,  10 * mearth/msun ],
+                    'period_b'       : [13.849-.05,   13.849+.05       ],                
+                    'eccentricity_b' : [0.00,         0.04             ],
+                    'inclination_b'  : [90],
+                    'longnode_b'     : [-45.0,        45.0             ],
+                    'argument_b'     : [0.0,          360.0            ],
+                    'mean_anomaly_b' : [0.0,          360.0            ],
+     
+                    'mass_c'         : [mearth/msun,  10 * mearth/msun ],   
+                    'period_c'       : [16.2369-.05,  16.2369+.05      ],                
+                    'eccentricity_c' : [0.00,         0.04             ],
+                    'inclination_c'  : [90],
+                    'longnode_c'     : [0.0                            ],
+                    'argument_c'     : [0.0,          360.0            ],
+                    'mean_anomaly_c' : [0.0,          360.0            ],
+
+                    'mass_d'         : [mearth/msun,  200 * mearth/msun ],
+                    'period_d'       : [40,  300],
+                    'eccentricity_d': [0.00],
+                    'inclination_d'  : [90.0],
+                    'longnode_d'     : [0.0],
+                    'argument_d'     : [0.0],
+                    'mean_anomaly_d' : [0.0,          360.0            ],
+                    
+                    'mass_e'         : [mearth/msun,  200 * mearth/msun ],
+                    'period_e'       : [40,  300],
+                    'eccentricity_e': [0.00],
+                    'inclination_e'  : [90.0],
+                    'longnode_e'     : [0.0],
+                    'argument_e'     : [0.0],
+                    'mean_anomaly_e' : [0.0,          360.0            ]}
 
 # In[ ]:
     

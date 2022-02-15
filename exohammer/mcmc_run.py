@@ -5,8 +5,19 @@ Created on Tue Aug  3 11:04:17 2021
 
 @author: nickjuliano
 """
-import numpy as np
 
+import os
+import datetime
+import emcee
+import corner
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+from exohammer.system import system
+from exohammer.store import store_run
+from exohammer.analyze import plot_rvs, plot_ttvs
+from exohammer.utilities import model, sampler_to_theta_max, bic
 
 class mcmc_run:
 	"""
@@ -68,7 +79,6 @@ class mcmc_run:
         plots TTVs
     """
 
-	import emcee
 
 	def __init__(self, planetary_system, data, lnprob=None):
 		"""
@@ -82,11 +92,6 @@ class mcmc_run:
             probability function. Must be of the format lnprob(theta, args). Optional (determined by initialize_prob.py if None)
         """
 
-		import os
-		import datetime
-		import emcee
-		from exohammer.system import system
-
 		date = str(datetime.datetime.now().date()) + '_' + str(datetime.datetime.now().time())[:-7]
 		output_path = str(os.path.abspath(os.getcwd()) + "/Output/")
 		testdir = output_path + 'run_' + date
@@ -95,8 +100,9 @@ class mcmc_run:
 		output_path = output_path + 'run_' + date + "/"
 		self.output_path = output_path
 		self.date = date
-		self.EnsembleSampler = emcee.EnsembleSampler
+		#self.EnsembleSampler = emcee.EnsembleSampler
 		self.system = system(planetary_system, data, lnprob)
+
 
 	def explore(self, iterations, thin=1, moves=[(emcee.moves.DEMove(), 0.8), (emcee.moves.DESnookerMove(), 0.2)],
 	            verbose=True, tune=True, silent=False):
@@ -122,7 +128,6 @@ class mcmc_run:
             If True, the parameters of some moves will be automatically tuned. (default: True)
         """
 
-		import numpy as np
 		walk = self.system.ndim * 3
 		self.nwalkers = int(walk) if ((int(walk) % 2) == 0) else int(walk) + 1
 		self.nburnin = int(0.1 * iterations)
@@ -132,54 +137,44 @@ class mcmc_run:
 		self.discard = 0
 		self.tune = tune
 		self.silent=silent
-		lnprob = self.system.lnprob
-		ndim = self.system.ndim
-		nwalkers = self.nwalkers
-		nburnin = self.nburnin
-		thin = self.thin
+
+		filename = self.output_path + "tutorial.h5"
+		self.backend = emcee.backends.HDFBackend(filename)
+		self.backend.reset(self.nwalkers, self.system.ndim)
 
 		p0 = self.system.initial_state(self.nwalkers)
 		# Initialize the sampler
-		sampler = self.EnsembleSampler(self.nwalkers, ndim, lnprob, args=[self.system],
-		                               moves=moves)  # , backend=backend)
+		sampler = emcee.EnsembleSampler(self.nwalkers,
+		                               self.system.ndim,
+		                               self.system.lnprob,
+		                               args=[self.system],
+		                               moves=self.moves,
+		                                backend=self.backend)  # , backend=backend)
 
 		print("Running burn-in... " + str(self.nburnin) + " steps")
 
-		p0, _, _ = sampler.run_mcmc(p0, nburnin, progress=verbose)
+		p0, _, _ = sampler.run_mcmc(p0,
+		                            self.nburnin,
+		                            progress=verbose)
+
 		sampler.reset()
 
 		print("Running production..." + str(self.niter) + " steps")
-		pos, prob, state = sampler.run_mcmc(p0, self.niter, thin=thin, progress=verbose, tune=tune)
+		pos, prob, state = sampler.run_mcmc(p0,
+		                                    self.niter,
+		                                    thin=self.thin,
+		                                    progress=verbose,
+		                                    tune=tune)
 
 		self.sampler = sampler
 		self.pos = pos
 		self.prob = prob
 		self.state = state
 
-		def sampler_to_theta_max(self):
-			import numpy as np
-			sampler = self.sampler
-			samples = sampler.get_chain(flat=True, thin=self.thin)
-			self.samples = samples
-			self.theta_max = samples[np.argmax(sampler.get_log_prob(flat=True, thin=self.thin))]
-
-		def bic(self):
-			k = len(theta_max)
-
-			n = 0
-			nplanets_ttv = self.system.nplanets_ttvs
-			for i in range(nplanets_ttv):
-				n += len(self.system.measured[i])
-			n += len(self.system.rvbjd)
-			l = np.argmax(self.sampler.get_log_prob(flat=True, thin=self.thin))
-			bic = k * np.log(n) - (2 * np.log(l))
-			self.bic = bic
-
-		sampler_to_theta_max(self)
-		bic(self)
+		#sampler_to_theta_max(self)
+		#bic(self)
 
 	def explore_again(self, niter, verbose=True):
-		import numpy as np
 		print("Running production..." + str(niter) + " steps")
 		self.niter += niter
 		pos, prob, state = self.sampler.run_mcmc(self.pos, niter, thin=self.thin, progress=verbose, tune=self.tune)
@@ -187,71 +182,35 @@ class mcmc_run:
 		self.prob = prob
 		self.state = state
 
-		def sampler_to_theta_max(self):
-			import numpy as np
-			sampler = self.sampler
-			samples = sampler.get_chain(flat=True, thin=self.thin)
-			self.samples = samples
-			self.theta_max = samples[np.argmax(sampler.get_log_prob(flat=True, thin=self.thin))]
-
-		def bic(self):
-			k = len(theta_max)
-
-			n = 0
-			nplanets_ttv = self.system.nplanets_ttvs
-			for i in range(nplanets_ttv):
-				n += len(self.system.measured[i])
-			n += len(self.system.rvbjd)
-			l = np.argmax(self.sampler.get_log_prob(flat=True, thin=self.thin))
-			bic = k * np.log(n) - (2 * np.log(l))
-			self.bic = bic
-
 		sampler_to_theta_max(self)
 		bic(self)
 
-	def explore_iteratively(self, total_iterations, checkpoints, burnin_factor=.2, thinning_factor=.01,
+	def explore_iteratively(self, total_iterations, checkpoints, burnin_factor=.2, thinning_factor=.001,
 	                        moves=[(emcee.moves.DEMove(), 0.8), (emcee.moves.DESnookerMove(), 0.2)],
 		                    verbose=True, tune=True, silent=False):
-		import numpy as np
-		from exohammer.store import store_run
+
 		walk = self.system.ndim * 3
 		self.nwalkers = int(walk) if ((int(walk) % 2) == 0) else int(walk) + 1
-		#self.nburnin = int(0.1 * iterations)
 		self.niter = int(checkpoints)
 		self.moves = moves
 		self.discard = int(self.niter * burnin_factor)
 		self.thin = int(self.niter * thinning_factor)
 		self.tune = tune
 		self.silent = silent
-		lnprob = self.system.lnprob
-		ndim = self.system.ndim
-		completed=0
 		self.total_iterations=total_iterations
 		self.pos = self.system.initial_state(self.nwalkers)
 		# Initialize the sampler
-		sampler = self.EnsembleSampler(self.nwalkers, ndim, lnprob, args=[self.system],
+		#backend = emcee.backends.HDFBackend(self.output_path + "chain.h5")
+		#backend.reset(self.nwalkers, self.system.ndim)
+
+		sampler = self.EnsembleSampler(self.nwalkers,
+		                               self.system.ndim,
+		                               self.system.lnprob,
+		                               args=[self.system],
 		                               moves=moves)  # , backend=backend)
 		nrepeat=int(total_iterations/checkpoints)
 
-		def sampler_to_theta_max(self):
-			import numpy as np
-			sampler = self.sampler
-			samples = sampler.get_chain(flat=True, thin=self.thin)
-			self.samples = samples
-			self.theta_max = samples[np.argmax(sampler.get_log_prob(flat=True, thin=self.thin))]
-
-		def bic(self):
-			k = len(self.theta_max)
-
-			n = 0
-			nplanets_ttv = self.system.nplanets_ttvs
-			for i in range(nplanets_ttv):
-				n += len(self.system.measured[i])
-			n += len(self.system.rvbjd)
-			l = np.argmax(self.sampler.get_log_prob(flat=True, thin=self.thin))
-			bic = k * np.log(n) - (2 * np.log(l))
-			self.bic = bic
-
+		completed = 0
 		for i in range(nrepeat):
 			print("Run " + str(i) + " of " + str(nrepeat) + ", " +str(checkpoints)+ " steps")
 			print("Steps completed: " + str(completed))
@@ -293,8 +252,6 @@ class mcmc_run:
             If True, saves the corner plot to the run's output path.
 		"""
 
-		import matplotlib.pyplot as plt
-		import corner
 		filename = self.output_path + "corner_" + self.date + '.png'
 		if samples == None:
 			samples = self.sampler.get_chain(flat=True, discard=self.discard, thin=self.thin)
@@ -303,6 +260,7 @@ class mcmc_run:
 			figure.savefig(filename)
 		if self.silent != True:
 			plt.show()
+		plt.close('all')
 
 	def plot_chains(self, samples=None, save=True):
 		"""
@@ -319,8 +277,6 @@ class mcmc_run:
         save : bool
             If True, saves the plot to the run's output path.
 		"""
-
-		import matplotlib.pyplot as plt
 		filename = self.output_path + "Chains_" + self.date + '.png'
 		# samples = self.samples
 		if samples == None:
@@ -337,6 +293,7 @@ class mcmc_run:
 			plt.savefig(filename)
 		if self.silent != True:
 			plt.show()
+		plt.close('all')
 
 	def summarize(self):
 		space = """
@@ -362,24 +319,18 @@ class mcmc_run:
 		print(self.theta_max)
 
 	def plot_rvs(self):
-		from exohammer.utilities import model
-		from exohammer.analyze import plot_rvs
-
 		__, __, rv_model = model(self.theta_max, self.system)
 		filename = self.output_path + "rvs_" + self.date + '.png'
 		plot_rvs(self.system.rvbjd, self.system.rvmnvel, self.system.rverrvel, rv_model, filename, self.silent)
 
 	def plot_ttvs(self):
-		from exohammer.utilities import model
-		from exohammer.analyze import plot_ttvs
-
 		nplanets = self.system.nplanets_ttvs
 		measured = self.system.measured
 		epoch = self.system.epoch
 		error = self.system.error
-		model, model_epoch, __ = model(self.theta_max, self.system)
+		mod, model_epoch, __ = model(self.theta_max, self.system)
 		filename = self.output_path + "TTVs_" + self.date + '.png'
-		plot_ttvs(nplanets, measured, epoch, error, model, model_epoch, filename, self.silent)
+		plot_ttvs(nplanets, measured, epoch, error, mod, model_epoch, filename, self.silent)
 
 	def autocorr(self):
 		filename = self.output_path + "autocor_" + self.date + '.txt'
@@ -419,18 +370,6 @@ class mcmc_run:
 		print(summary)
 		print(self.system.variable_labels)
 		print(self.theta_max)
-
-	def bic(self):
-		k=len(theta_max)
-
-		n=0
-		nplanets_ttv=self.system.nplanets_ttvs
-		for i in range(nplanets_ttv):
-			n += len(self.system.measured[i])
-		n+=len(self.system.rvbjd)
-		l=np.argmax(self.sampler.get_log_prob(flat=True, thin=self.thin))
-		bic= k*np.log(n)-(2*np.log(l))
-		self.bic=bic
 
 	def save_misc_txt(self, filename, info, more_info=None):
 		filename = self.output_path + filename + "_" + self.date + '.txt'

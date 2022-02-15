@@ -6,14 +6,10 @@ Created on Tue Aug  3 11:03:26 2021
 @author: nickjuliano
 """
 
-import numpy as np
 from exohammer.utilities import *
-#import ttvfast 
-import ttvfast
 import numpy as np
 
 def lnprob(theta, system):
-    #from exohammer.utilities import model as model_all
     
     ########
     ########
