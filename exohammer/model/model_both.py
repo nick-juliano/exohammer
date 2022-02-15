@@ -1,28 +1,19 @@
+from exohammer.utilities import generate_planets, au_per_day
+import ttvfast
+import numpy as np
+
 def model_both(theta, system):
-    from exohammer.utilities import generate_planets 
-    import ttvfast
-    import numpy as np
-    dt=0.4
-    mstar            = system.mstar 
-    epoch            = system.epoch
-    measured         = system.measured
-    error            = system.error
-    orbital_elements = system.orbital_elements
-    tmin             = system.tmin-dt
-    tmax             = system.tmax+dt
-    rvbjd            = system.rvbjd
-    nplanets         = system.nplanets_ttvs
-    planets          = generate_planets(theta, system)
-    au_per_day       = 1731460
+    dt=0.5
+
+    model    = ttvfast.ttvfast(generate_planets(theta, system),
+                               system.mstar,
+                               system.tmin-dt,
+                               dt,
+                               system.tmax+dt,
+                               rv_times=system.rvbjd)
     
-    mod=None
-    epo=None
-    rv_model=None
-    
-    model    = ttvfast.ttvfast(planets, mstar, tmin, dt, tmax, rv_times=rvbjd)
-    
-    rv_model = model['rv']
-    rv_model = np.array(rv_model)*au_per_day
+    rv_model = np.array(model['rv'])*au_per_day
+    #rv_model = np.array(rv_model)*au_per_day
 
 
     mod=[]
@@ -33,9 +24,9 @@ def model_both(theta, system):
     model_epoch = np.array(model_epoch[:trim])
     model_time  = np.array(model_time[:trim])
     
-    for i in range(nplanets):
+    for i in range(system.nplanets_ttvs):
         idx        = np.where(model_index == float(i))
-        epoch_temp = np.copy(np.array(epoch[i]))
+        epoch_temp = np.copy(np.array(system.epoch[i]))
         epoch_temp = epoch_temp[epoch_temp  <= max(model_epoch[idx])]
         model_temp = model_time[idx][epoch_temp]
         mod.append(model_temp.tolist())

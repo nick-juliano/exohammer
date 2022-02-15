@@ -12,10 +12,11 @@ class data:
 
         To be initialized and passed into a **planetary_system** object
     """
-    def __init__(self, mstar, 
+    def __init__(self,
+                 mstar,
                  ttvs,              #[epoch, measured, error], 
-                 rvs,               #[bjd, mnvel, errvel], 
-                 orbital_elements):
+                 rvs):               #[bjd, mnvel, errvel],
+
         """
             Initialize **data** object
 
@@ -32,8 +33,7 @@ class data:
             rvs : list
                 rv measurements in nested-list format [[bjd],[velocity],[error]]
             """
-        
-        import numpy as np
+
         self.mstar      = mstar
         
         self.epoch      = ttvs[0]
@@ -45,8 +45,7 @@ class data:
         self.rverrvel   = rvs[2]
         
 
-        
-        self.orbital_elements = orbital_elements
+
         # self.nplanets_fit = len(self.epoch)
 
         def find_minmax(self):

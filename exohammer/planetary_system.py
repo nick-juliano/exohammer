@@ -56,9 +56,14 @@ class planetary_system:
 
             planet_designation = ['b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
             k=0
+            self.fixed_flag = False
+            self.flat_flag = False
+            self.gaus_flag = False
+
             for i in orbital_elements:
                 element=orbital_elements[i]
                 if len(element) == 1:
+                    self.fixed_flag = True
                     fixed_labels.append(str(i))
                     k+=1
                     fixed.append(element[0])
@@ -68,6 +73,7 @@ class planetary_system:
 
                     
                 if len(element) == 2:
+                    self.flat_flag = True
                     minimum=element[0]
                     maximum=element[1]
                     options=np.linspace(minimum,  maximum, 200)
@@ -81,6 +87,7 @@ class planetary_system:
                     non_gaus_min.append(minimum)
                     
                 if len(element) == 3:
+                    self.gaus_flag == True
                     index.append((i-k)+(len(orbital_elements)))
                     mu.append(element[0])
                     sigma.append(element[1])

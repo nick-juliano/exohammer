@@ -6,11 +6,15 @@ Created on Tue Aug  3 10:58:30 2021
 @author: nickjuliano
 """
 
-
-
+from astropy import constants as const
+from numpy import polyfit
+import numpy as np
+from ttvfast import models
+import ttvfast
+import pickle
+import matplotlib.pyplot as plt
 
 def sun_to_earth(solar_mass):
-    from astropy import constants as const
     mearth     = const.M_earth.cgs.value #grams
     msun       = const.M_sun.cgs.value
     earth_mass = solar_mass/msun*mearth
@@ -45,7 +49,6 @@ def best_fit(X, Y):
 
 
 def compute_oc(obs, epoch):
-    from numpy import polyfit
     slope, inter = polyfit(epoch,obs,1)
     tlin = inter + slope * np.array(epoch)
     oc = obs - tlin
@@ -55,7 +58,6 @@ def compute_oc(obs, epoch):
 
 
 def ttvs(measured, epoch):
-    import numpy as np
     oc=[]
     for i in range(len(measured)):
         slope, inter = best_fit(epoch[i], measured[i])
@@ -78,12 +80,12 @@ def trim(nplanets, epoch, measured, model, error, flatten=True):
             mod.append(model[i])
             err.append(error[i][:len(epoch[i])])
             ep.append(epoch[i])
-        if len(model[i])>len(measured[i]):
+        elif len(model[i])>len(measured[i]):
             meas.append(measured[i])
             mod.append(model[i][:len(epoch[i])])
             err.append(error[i])
             ep.append(epoch[i])
-        if len(model[i])==len(measured[i]):
+        elif len(model[i])==len(measured[i]):
             meas.append(measured[i])
             mod.append(model[i])
             err.append(error[i])
@@ -113,8 +115,6 @@ def flatten_list(_2d_list):
 
 
 def generate_planets_from_scratch(theta, planetary_system):
-    
-    from ttvfast import models
 
     nplanets         = planetary_system.nplanets
     fixed_labels     = planetary_system.fixed_labels
@@ -164,8 +164,7 @@ def generate_planets_from_scratch(theta, planetary_system):
 
 
 def generate_planets(theta, system):
-    
-    from ttvfast import models
+
 
     nplanets         = system.nplanets_rvs
     fixed_labels     = system.fixed_labels
@@ -187,17 +186,17 @@ def generate_planets(theta, system):
         for i in orb_elements:
             if i['element'] == 'mass_'         + planet_designation[j]:
                 mass         = i['value']
-            if i['element'] == 'period_'       + planet_designation[j]:
+            elif i['element'] == 'period_'       + planet_designation[j]:
                 period       = i['value']
-            if i['element'] == 'eccentricity_' + planet_designation[j]:
+            elif i['element'] == 'eccentricity_' + planet_designation[j]:
                 eccentricity = i['value'] 
-            if i['element'] == 'inclination_'  + planet_designation[j]:
+            elif i['element'] == 'inclination_'  + planet_designation[j]:
                 inclination  = i['value'] 
-            if i['element'] == 'longnode_'     + planet_designation[j]:
+            elif i['element'] == 'longnode_'     + planet_designation[j]:
                 longnode     = i['value'] 
-            if i['element'] == 'argument_'     + planet_designation[j]:
+            elif i['element'] == 'argument_'     + planet_designation[j]:
                 argument     = i['value'] 
-            if i['element'] == 'mean_anomaly_' + planet_designation[j]:
+            elif i['element'] == 'mean_anomaly_' + planet_designation[j]:
                 mean_anomaly = i['value'] 
         
         planet=models.Planet(
@@ -217,7 +216,6 @@ def generate_planets(theta, system):
 
 
 def model(theta, system):
-        import ttvfast
         dt=0.4
         mstar            = system.mstar 
         epoch            = system.epoch
@@ -263,8 +261,6 @@ def model(theta, system):
     
 
 def model_rvs(theta, planetary_system, tmin, tmax, dt, rvbjd):
-    import numpy as np
-    import ttvfast
     mstar            = planetary_system.mstar
     planets          = generate_planets_from_scratch(theta, planetary_system)
     model  = ttvfast.ttvfast(planets, mstar, tmin, dt, tmax, rv_times=rvbjd)['rv']
@@ -275,8 +271,6 @@ def model_rvs(theta, planetary_system, tmin, tmax, dt, rvbjd):
 
 
 def model_ttvs(theta, planetary_system, tmin, tmax):
-    import numpy as np
-    import ttvfast
     dt=0.3
     mstar            = planetary_system.mstar 
     tmin             = min(rvbjd)
@@ -303,7 +297,6 @@ def model_ttvs(theta, planetary_system, tmin, tmax):
 
 
 def sampler_to_theta_max(sampler):
-    import numpy as np
     samples = sampler.flatchain
     samples[np.argmax(sampler.flatlnprobability)]
     theta_max=samples[np.argmax(sampler.flatlnprobability)]
@@ -313,7 +306,6 @@ def sampler_to_theta_max(sampler):
 
 
 def restore(mcmc_run, filename=None):
-    import pickle 
     if filename==None:
         #import easygui
         filename=easygui.fileopenbox()
@@ -326,19 +318,12 @@ def restore(mcmc_run, filename=None):
 
 
 
-        
-import numpy as np
-from astropy import constants as const
-
-
 def compute_rv_resid(rv_measured, rv_simulated):
     resid=rv_measured-rv_simulated
     return resid
 
 
 def plot_periodogram(t, rv, title):
-    import numpy as np
-    import matplotlib.pyplot as plt
     t=np.array(t)
     t=t-t[0]
     rv=np.array(rv)
@@ -401,4 +386,20 @@ mearth = const.M_earth.cgs.value #grams
 msun   = const.M_sun.cgs.value
 au_per_day     = 1731460 #meters per second
 
-mstar  = 1.034 
+mstar  = 1.034
+
+
+def sampler_to_theta_max(run):
+    samples = run.sampler.get_chain(flat=True, thin=run.thin)
+    run.theta_max = samples[np.argmax(run.sampler.get_log_prob(flat=True, thin=run.thin))]
+
+
+def bic(run):
+    k = len(run.theta_max)
+    n = 0
+    for i in range(run.system.nplanets_ttvs):
+        n += len(run.system.measured[i])
+    n += len(run.system.rvbjd)
+    l = np.argmax(run.sampler.get_log_prob(flat=True, thin=run.thin))
+    bic = k * np.log(n) - (2*l)
+    run.bic = bic

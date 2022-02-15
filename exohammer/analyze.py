@@ -7,14 +7,14 @@ Created on Mon Sep 20 12:59:20 2021
 """
 
 from astropy import constants as const
+import matplotlib.pyplot as plt
+from exohammer.utilities import ttvs
 
 mearth = const.M_earth.cgs.value  # grams
 msun = const.M_sun.cgs.value
 
 
 def plot_ttvs(nplanets, measured, epoch, error, model, model_epoch, filename=None, silent=False):
-	import matplotlib.pyplot as plt
-	from exohammer.utilities import ttvs
 
 	planet_designation = ['b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
 	fig, axes = plt.subplots(nplanets, figsize=(20, 16), sharex=True)
@@ -35,10 +35,9 @@ def plot_ttvs(nplanets, measured, epoch, error, model, model_epoch, filename=Non
 		fig.savefig(filename)
 	if silent != True:
 		plt.show()
-
+	plt.close('all')
 
 def plot_rvs(bjd, rv, rv_err, rv_model, filename, silent=False):
-	import matplotlib.pyplot as plt
 
 	rv_resid = rv - rv_model
 
@@ -64,3 +63,4 @@ def plot_rvs(bjd, rv, rv_err, rv_model, filename, silent=False):
 		plt.savefig(filename)
 	if silent != True:
 		plt.show()
+	plt.close('all')
