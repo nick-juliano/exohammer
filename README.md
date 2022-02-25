@@ -25,21 +25,21 @@ ___
     
 
 ```python
-orbital_elements = {'mass_b'         : [.000001],                           # M_sun
-                    'period_b'       : [13.849-.05,   13.849+.05       ],   # Days       
-                    'eccentricity_b' : [0.00,         0.04             ],   
-                    'inclination_b'  : [89.5,         90.5             ],   # Degrees
-                    'longnode_b'     : [-45.0,        45.0             ],   # Degrees
-                    'argument_b'     : [0.0,          360.0            ],   # Degrees
-                    'mean_anomaly_b' : [0.0,          360.0            ],   # Degrees
-     
-                    'mass_c'         : [.000001],                           # fixed value
-                    'period_c'       : [16.0 - .05,  16.0 + .05        ],   # flat prior           
-                    'eccentricity_c' : [0.00, 0.04, 0                  ],   # gaussian prior
-                    'inclination_c'  : [89.5,         90.5             ],
-                    'longnode_c'     : [0.0                            ],
-                    'argument_c'     : [0.0,          360.0            ],
-                    'mean_anomaly_c' : [0.0,          360.0            ]}
+orbital_elements = {'mass_b' : [.000001], # M_sun, fixed value
+                    'period_b' : [13.849 - .05, 13.849 + .05], # Days, flat prior  
+                    'eccentricity_b' : [0.00, 0.04, 0.01], # gaussian prior
+                    'inclination_b' : [89.5, 90.5], # Degrees
+                    'longnode_b' : [-45.0, 45.0], # Degrees
+                    'argument_b' : [0.0, 360.0], # Degrees
+                    'mean_anomaly_b' : [0.0, 360.0], # Degrees
+
+                    'mass_c'         : [.000001], # fixed value
+                    'period_c'       : [16.0 - .05, 16.0 + .05], # flat prior           
+                    'eccentricity_c' : [0.00, 0.04, 0], # gaussian prior
+                    'inclination_c'  : [89.5, 90.5],
+                    'longnode_c'     : [0.0],
+                    'argument_c'     : [0.0, 360.0],
+                    'mean_anomaly_c' : [0.0, 360.0]}
 ```
 
 

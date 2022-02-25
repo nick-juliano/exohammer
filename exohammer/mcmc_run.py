@@ -239,7 +239,7 @@ class mcmc_run:
 			self.state=state
 			run=self
 			store=store_run(run)
-			store.store()
+			store.serialize()
 			run.plot_chains()
 			run.autocorr()
 			run.plot_ttvs()
