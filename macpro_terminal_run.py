@@ -12,4 +12,4 @@ run = exo.mcmc_run.mcmc_run(kepler_36, data)
 
 run.explore_iteratively(total_iterations=100000000, checkpoints=10000, burnin_factor=.2, thinning_factor=.001,
 	                    moves=emcee.moves.DEMove(),
-	                    verbose=False, tune=True, silent=False)
+	                    verbose=False, tune=True, silent=True)

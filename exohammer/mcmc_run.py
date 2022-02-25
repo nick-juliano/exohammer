@@ -18,6 +18,11 @@ from exohammer.system import system
 from exohammer.store import store_run
 from exohammer.analyze import plot_rvs, plot_ttvs
 from exohammer.utilities import model, sampler_to_theta_max, bic
+import time
+from exohammer.lnprob.initialize_prob import initialize_prob
+from exohammer.model.initialize_model import initialize_model
+import cProfile
+import pstats
 
 class mcmc_run:
 	"""
@@ -100,10 +105,11 @@ class mcmc_run:
 		output_path = output_path + 'run_' + date + "/"
 		self.output_path = output_path
 		self.date = date
-		#self.EnsembleSampler = emcee.EnsembleSampler
-		self.system = system(planetary_system, data, lnprob)
+		self.system = system(planetary_system, data)
+		if lnprob == None:
+			self.lnprob = initialize_prob(system=self.system)
 
-
+		self.system.model = initialize_model(system=self.system)
 	def explore(self, iterations, thin=1, moves=[(emcee.moves.DEMove(), 0.8), (emcee.moves.DESnookerMove(), 0.2)],
 	            verbose=True, tune=True, silent=False):
 
@@ -185,8 +191,11 @@ class mcmc_run:
 		sampler_to_theta_max(self)
 		bic(self)
 
-	def explore_iteratively(self, total_iterations, checkpoints, burnin_factor=.2, thinning_factor=.001,
-	                        moves=[(emcee.moves.DEMove(), 0.8), (emcee.moves.DESnookerMove(), 0.2)],
+	def explore_iteratively(self, total_iterations,
+	                        checkpoints,
+	                        burnin_factor=.2,
+	                        thinning_factor=.001,
+	                        moves=emcee.moves.DEMove(),
 		                    verbose=True, tune=True, silent=False):
 
 		walk = self.system.ndim * 3
@@ -203,19 +212,26 @@ class mcmc_run:
 		#backend = emcee.backends.HDFBackend(self.output_path + "chain.h5")
 		#backend.reset(self.nwalkers, self.system.ndim)
 
-		sampler = self.EnsembleSampler(self.nwalkers,
+		sampler = emcee.EnsembleSampler(self.nwalkers,
 		                               self.system.ndim,
-		                               self.system.lnprob,
+		                               self.lnprob,
 		                               args=[self.system],
 		                               moves=moves)  # , backend=backend)
 		nrepeat=int(total_iterations/checkpoints)
 
 		completed = 0
+		times=[]
+		# prof = cProfile.Profile()
 		for i in range(nrepeat):
-			print("Run " + str(i) + " of " + str(nrepeat) + ", " +str(checkpoints)+ " steps")
+			# prof.enable()
+			tic = time.perf_counter()
 			print("Steps completed: " + str(completed))
+			print("Run " + str(i) + " of " + str(nrepeat) + ", " +str(checkpoints)+ " steps")
 			self.sampler=sampler
 			pos, prob, state = sampler.run_mcmc(self.pos, checkpoints, progress=verbose, tune=self.tune)
+			toc = time.perf_counter()
+			times.append(toc-tic)
+			print(times)
 			sampler_to_theta_max(self)
 			bic(self)
 			self.pos=pos
@@ -230,12 +246,15 @@ class mcmc_run:
 			run.plot_rvs()
 			run.summarize()
 			run.plot_corner()
+
 			sampler_to_theta_max(self)
 			self.niter += int(checkpoints)
 			self.discard = int(self.niter * burnin_factor)
 			self.thin = int(self.niter * thinning_factor)
 			completed+=checkpoints
-
+			# prof.disable()
+			# stats = pstats.Stats(prof).sort_stats('tottime')
+			# stats.print_stats(.1)
 		print("Run complete")
 
 	def plot_corner(self, samples=None, save=True):

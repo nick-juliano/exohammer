@@ -1,6 +1,8 @@
+from exohammer.utilities import generate_planets
+import ttvfast
+
 def model_rv(theta, system):
-    from exohammer.utilities import generate_planets
-    import ttvfast
+
     dt=0.4
     mstar            = system.mstar 
     epoch            = system.epoch
