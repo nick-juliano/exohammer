@@ -7,13 +7,10 @@ Created on Tue Aug  3 10:57:17 2021
 """
 from . import utilities
 from . import data
-from . import analyze
 from . import planetary_system
 from . import mcmc_run
-from . import prob_functions
 from . import system
 from . import store
-
 
 def describe():
 	print(""""

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 from setuptools import setup
 from codecs import open
 from os import path
@@ -11,8 +10,11 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as infile:
 	long_description = infile.read()
 
 version = {}
-with open(path.join(here, 'ttvfast', 'version.py')) as infile:
+with open(path.join(here, 'exohammer', 'version.py')) as infile:
 	exec(infile.read(), version)
+
+with open(path.join(here, 'requirements.txt')) as f:
+	required = f.read().splitlines()
 
 setup(
 	name='exohammer',
@@ -24,17 +26,6 @@ setup(
 	author_email='nick_juliano@icloud.com',
 	license='GPL',
 	packages=['exohammer', ],
-	install_requires=['numpy', 'ttvfast', 'emcee', 'astropy'],
-	EXTRA_REQUIRE={
-		"extras": ["pickle", "matplotlib", "easygui"], }
-# "tests": ["pytest", "pytest-cov", "coverage[toml]"],
-ext_modules = [exohammer, ],
-              classifiers = [
-	'Development Status :: 4 - Beta',
-	'Intended Audience :: Science/Research',
-	'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
-	'Topic :: Scientific/Engineering :: Physics',
-	'Programming Language :: Python :: 3.5',
-	'Programming Language :: Python :: 3.7',
-	'Programming Language :: Python :: 3.8']
+	install_requires=required,
+	extras_require={"extras": ["pickle", "matplotlib", "easygui"], }
 )

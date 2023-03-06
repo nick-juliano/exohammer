@@ -1,14 +1,9 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Aug  3 10:58:30 2021
-
-@author: nickjuliano
-"""
 
 from astropy import constants as const
-import numpy as np
+from numpy import log, argmax, array, zeros, sin, cos, pi, exp
 from ttvfast import models
+
 import matplotlib.pyplot as plt
 
 mearth = const.M_earth.cgs.value  # grams
@@ -63,7 +58,7 @@ def ttvs(measured, epoch):
     oc = []
     for i in range(len(measured)):
         slope, inter = best_fit(epoch[i], measured[i])
-        y = inter + slope * np.array(epoch[i])
+        y = inter + slope * array(epoch[i])
         oc.append((measured[i] - y))
     return oc
 
@@ -103,10 +98,10 @@ def trim(nplanets, epoch, measured, model, error, flatten=True):
             err.append(error[i])
             ep.append(epoch[i])
     if flatten:
-        mod = np.array(flatten_list(mod))
-        meas = np.array(flatten_list(meas))
-        err = np.array(flatten_list(err))
-        ep = np.array(flatten_list(ep))
+        mod = array(flatten_list(mod))
+        meas = array(flatten_list(meas))
+        err = array(flatten_list(err))
+        ep = array(flatten_list(ep))
     return mod, meas, err, ep
 
 
@@ -193,9 +188,9 @@ def plot_periodogram(t, rv, title):
         rv (list): The radial velocity values at each time
         title (str): The title of the plot
     """
-    t = np.array(t)
+    t = array(t)
     t = t - t[0]
-    rv = np.array(rv)
+    rv = array(rv)
     s1 = len(t)
     sx = sum(rv) / len(rv)
     sx2 = 0.0
@@ -206,19 +201,19 @@ def plot_periodogram(t, rv, title):
     pstop = t[-1]
     pint = 1
     ni = -6.362 + 1.193 * s1 + 0.00098 * s1 ** 2
-    pw = np.zeros([int((pstop - pstart) / pint), 3])
+    pw = zeros([int((pstop - pstart) / pint), 3])
     for m in range(int((pstop - pstart) / pint)):
         pt = pstart + (m + 1) * pint
-        w = 2 * np.pi / pt
+        w = 2 * pi / pt
         tao = 0.0
-        p1 = sum(rv * np.cos(w * (t - tao)))
-        p3 = sum(rv * np.sin(w * (t - tao)))
-        p2 = sum((np.cos(w * (t - tao))) ** 2)
-        p4 = sum((np.sin(w * (t - tao))) ** 2)
+        p1 = sum(rv * cos(w * (t - tao)))
+        p3 = sum(rv * sin(w * (t - tao)))
+        p2 = sum((cos(w * (t - tao))) ** 2)
+        p4 = sum((sin(w * (t - tao))) ** 2)
         px = 0.5 * (p1 ** 2 / p2 + p3 ** 2 / p4) / sx2
         pw[m, 0] = pt
         pw[m, 1] = px
-        pw[m, 2] = 1 - (1 - np.exp(-px)) ** ni
+        pw[m, 2] = 1 - (1 - exp(-px)) ** ni
     fig = plt.figure()
     ax = fig.add_subplot(111)
     l1 = ax.plot(pw[:, 0], pw[:, 1], 'b', alpha=0.9, label='Power')
@@ -248,7 +243,7 @@ def sampler_to_theta_max(run):
         list: The theta value with the highest lnprob
     """
     samples = run.sampler.get_chain(flat=True, thin=run.thin)
-    run.theta_max = samples[np.argmax(run.sampler.get_log_prob(flat=True, thin=run.thin))]
+    run.theta_max = samples[argmax(run.sampler.get_log_prob(flat=True, thin=run.thin))]
     return run.theta_max
 
 def bic(run):
@@ -266,8 +261,8 @@ def bic(run):
     for i in range(run.system.nplanets_ttvs):
         n += len(run.system.measured[i])
     n += len(run.system.rvbjd)
-    lnprob = np.argmax(run.sampler.get_log_prob(flat=True, thin=run.thin))
-    bayesian_information_criterion = k * np.log(n) - (2 * lnprob)
+    lnprob = argmax(run.sampler.get_log_prob(flat=True, thin=run.thin))
+    bayesian_information_criterion = k * log(n) - (2 * lnprob)
     run.bic = bayesian_information_criterion
     return bayesian_information_criterion
 
@@ -343,3 +338,4 @@ def plot_rvs(bjd, rv, rv_err, rv_model, filename, silent = False):
     if not silent:
         plt.show()
     plt.close('all')
+

@@ -1,17 +1,12 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Aug  3 11:04:17 2021
 
-@author: nickjuliano
-"""
+from os import path, makedirs, getcwd
+from datetime import datetime
+from time import perf_counter
+from numpy import argmax
 
-import os
-import datetime
 import emcee
 import corner
-import time
-
 import matplotlib.pyplot as plt
 
 from exohammer.system import System
@@ -30,11 +25,11 @@ class MCMCRun:
 			lnprob (function): The probability function for your ensemble sampler. By default,
 				this is set to `None` and the probability function is initialized internally.
 		"""
-		date = str(datetime.datetime.now().date()) + '_' + str(datetime.datetime.now().time())[:-7]
-		output_path = str(os.path.abspath(os.getcwd()) + "/Output/")
+		date = str(datetime.now().date()) + '_' + str(datetime.now().time())[:-7]
+		output_path = str(path.abspath(getcwd()) + "/Output/")
 		testdir = output_path + 'run_' + date
-		if not os.path.exists(testdir):
-			os.makedirs(testdir)
+		if not path.exists(testdir):
+			makedirs(testdir)
 		output_path = output_path + 'run_' + date + "/"
 		self.output_path = output_path
 		self.date = date
@@ -56,8 +51,6 @@ class MCMCRun:
 	                        silent=False):
 		"""
 		The primary method for running an MCMC sampler.
-
-
 
 		Args:
 			total_iterations (int): The total number of steps to advance your chains
@@ -100,12 +93,13 @@ class MCMCRun:
 		                                args=[self.system],
 		                                moves=self.moves,
 		                                live_dangerously=True)
+
 		nrepeat = int(total_iterations / checkpoints)
 		completed = 0
 		times = []
 
 		for i in range(nrepeat):
-			tic = time.perf_counter()
+			tic = perf_counter()
 			print("Steps completed: " + str(completed))
 			print("Run " + str(i) + " of " + str(nrepeat) + ", " + str(checkpoints) + " steps")
 			self.sampler = sampler
@@ -114,7 +108,7 @@ class MCMCRun:
 			                                    progress=verbose,
 			                                    tune=self.tune,
 			                                    skip_initial_state_check=True)
-			toc = time.perf_counter()
+			toc = perf_counter()
 			times.append(toc - tic)
 			print(times)
 			sampler_to_theta_max(self)
@@ -124,7 +118,7 @@ class MCMCRun:
 			self.state = state
 			run = self
 			store = StoreRun(run)
-			store.serialize()
+			store.store_csvs()
 			run.plot_chains()
 			run.autocorr()
 			run.plot_ttvs()
@@ -137,62 +131,6 @@ class MCMCRun:
 			self.thin = int(self.niter * thinning_factor)
 			completed += checkpoints
 		print("Run complete")
-
-	def explore_again(self, iterations, checkpoints, verbose=True, silent=False):
-		"""
-		A method for further running an MCMC sampler that has already been explored.
-
-		Args:
-			iterations (int): The additional number of steps to advance your ensemble
-			checkpoints (int): At this number of steps, the run will save your run for incremental evaluation
-			verbose (bool): Whether to display a generic tqdm progress bar for your run.
-			silent (bool): Whether to display your plots in your IDE or not.
-		"""
-		self.silent = silent
-		sampler = emcee.EnsembleSampler(self.nwalkers,
-		                                self.system.ndim,
-		                                self.lnprob,
-		                                args=[self.system],
-		                                moves=self.moves,
-		                                live_dangerously=True)
-		nrepeat = int(iterations / checkpoints)
-		completed = 0
-		times = []
-		for i in range(nrepeat):
-			tic = time.perf_counter()
-			print("Steps completed: " + str(completed))
-			print("Run " + str(i) + " of " + str(nrepeat) + ", " + str(checkpoints) + " steps")
-			self.sampler = sampler
-			pos, prob, state = sampler.run_mcmc(self.pos,
-			                                    checkpoints,
-			                                    progress=verbose,
-			                                    tune=self.tune,
-			                                    skip_initial_state_check=True)
-			toc = time.perf_counter()
-			times.append(toc - tic)
-			print(times)
-			sampler_to_theta_max(self)
-			bic(self)
-			self.pos = pos
-			self.prob = prob
-			self.state = state
-			run = self
-			store = StoreRun(run)
-			store.serialize()
-			run.plot_chains()
-			run.autocorr()
-			run.plot_ttvs()
-			run.plot_rvs()
-			run.summarize()
-			run.plot_corner()
-			sampler_to_theta_max(self)
-			self.niter += int(checkpoints)
-			self.discard = int(self.niter * self.burnin_factor)
-			self.thin = int(self.niter * self.thinning_factor)
-			completed += checkpoints
-
-		sampler_to_theta_max(self)
-		bic(self)
 
 	def plot_corner(self, samples=None, save=True):
 		"""
@@ -216,7 +154,10 @@ class MCMCRun:
 		filename = self.output_path + "corner_" + self.date + '.png'
 		if samples is None:
 			samples = self.sampler.get_chain(flat=True, discard=self.discard, thin=self.thin)
-		figure = corner.corner(samples, labels=self.system.variable_labels)
+		figure = corner.corner(samples, quantiles=[0.16, 0.5, 0.84],
+				                       show_titles=True,
+				                       labels=self.system.variable_labels,
+									   title_fmt = '.2e')
 		if save:
 			figure.savefig(filename)
 		if not self.silent:
@@ -293,16 +234,17 @@ class MCMCRun:
 		"""
 
 		space = """
-		
+
 		"""
 		summary = """
-		nwalkers: %i walkers
-		niter_total: %i total iterations  
-		nburnin: %i
-		The resulting chain was thinned by a factor of %i
-		The bic is: %i
-		The resultant orbital elements are below:
-        """ % (self.nwalkers, self.niter, self.discard, self.thin, self.bic)
+				nwalkers: %i walkers
+				niter_total: %i total iterations  
+				nburnin: %i
+				The resulting chain was thinned by a factor of %i
+				The bic is: %i
+				The max lnprob is %i
+				The resultant orbital elements are below:
+		        """ % (self.nwalkers, self.niter, self.discard, self.thin, self.bic, argmax(self.sampler.get_log_prob(flat=True, thin=self.thin)))
 		run_description = open(self.output_path + "/run_description_" + self.date + ".txt", "w+")
 		run_description.write(summary)
 		run_description.write(space)
