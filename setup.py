@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from setuptools import setup
+from setuptools import setup, find_packages
 from codecs import open
 from os import path
 
@@ -25,7 +25,8 @@ setup(
 	author='Nick Juliano',
 	author_email='nick_juliano@icloud.com',
 	license='GPL',
-	packages=['exohammer', ],
+	packages=find_packages(),
+	include_package_data=True,
 	install_requires=required,
 	extras_require={"extras": ["pickle", "matplotlib", "easygui"], }
 )
