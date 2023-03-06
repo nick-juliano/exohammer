@@ -1,12 +1,6 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Aug  3 11:02:01 2021
 
-@author: nickjuliano
-"""
-import numpy as np
-
+from numpy import linspace, random
 
 class PlanetarySystem:
     """
@@ -61,11 +55,11 @@ class PlanetarySystem:
             if len(element) == 2:
                 minimum = element[0]
                 maximum = element[1]
-                options = np.linspace(minimum, maximum, 200)
+                options = linspace(minimum, maximum, 200)
                 theta_ranges.append(options)
                 theta_min.append(minimum)
                 theta_max.append(maximum)
-                p0.append(np.random.choice(options))
+                p0.append(random.choice(options))
                 variable_labels.append(str(i))
                 non_gaus.append(element)
                 non_gaus_max.append(maximum)

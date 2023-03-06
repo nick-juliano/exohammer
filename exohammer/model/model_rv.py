@@ -1,6 +1,7 @@
-import ttvfast
-import numpy as np
+# -*- coding: utf-8 -*-
 
+from ttvfast import ttvfast
+from numpy import array
 from exohammer.utilities import generate_planets
 
 
@@ -16,9 +17,9 @@ def model_rv(theta, system):
 	mod = None
 	epo = None
 
-	model = ttvfast.ttvfast(planets, mstar, tmin, dt, tmax, rv_times=rvbjd)
+	model = ttvfast(planets, mstar, tmin, dt, tmax, rv_times=rvbjd)
 
 	rv_model = model['rv']
-	rv_model = np.array(rv_model) * au_per_day
+	rv_model = array(rv_model) * au_per_day
 
 	return mod, epo, rv_model

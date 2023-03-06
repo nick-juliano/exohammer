@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from numpy import delete, all, array, inf, isfinite
 from exohammer.utilities import trim, flatten_list
-import numpy as np
+
 
 
 def lnprior(theta, system):
@@ -10,9 +11,9 @@ def lnprior(theta, system):
 	minimum = system.theta_min
 	maximum = system.theta_max
 
-	(np.delete(flat, j) for j in index for i in range(len(flat), 0, -1) if i == j)
+	(delete(flat, j) for j in index for i in range(len(flat), 0, -1) if i == j)
 
-	lp = 0. if np.all(minimum < flat) and np.all(flat < maximum) else -np.inf
+	lp = 0. if all(minimum < flat) and all(flat < maximum) else -inf
 
 	gaus = theta[index]
 	mu = system.mu
@@ -30,30 +31,30 @@ def lnlike(theta, system):
 
 	# TTV
 	comp, obs, err, ep = trim(system.nplanets_ttvs, system.epoch, system.measured, ttmodel, system.error, flatten=True)
-	resid = np.array(obs) - np.array(comp)
+	resid = array(obs) - array(comp)
 
-	ttv_likelihood = ((np.array(resid) ** 2.) / (np.array(err) ** 2.) if len(resid) == len(err) else [-np.inf])
+	ttv_likelihood = ((array(resid) ** 2.) / (array(err) ** 2.) if len(resid) == len(err) else [-inf])
 
 	for i in ttv_likelihood:
 		sum_likelihood += i
 
 	# RV
-	rvresid = np.array(flatten_list(system.rvmnvel)) - (np.array(flatten_list(rv_model)))
-	rv_likelihood = (np.array(rvresid) ** 2.) / (np.array(flatten_list(system.rverrvel)) ** 2.)
+	rvresid = array(flatten_list(system.rvmnvel)) - (array(flatten_list(rv_model)))
+	rv_likelihood = (array(rvresid) ** 2.) / (array(flatten_list(system.rverrvel)) ** 2.)
 
 	for i in rv_likelihood:
 		sum_likelihood += i
 
 	likelihood = -0.5 * sum_likelihood
-	if not np.isfinite(likelihood):
-		likelihood = -np.inf
+	if not isfinite(likelihood):
+		likelihood = -inf
 
 	return likelihood
 
 
 def lnprob(theta, system):
 	lp = lnprior(theta, system)
-	if not np.isfinite(lp):
-		return -np.inf
+	if not isfinite(lp):
+		return -inf
 	else:
 		return lp + lnlike(theta, system)

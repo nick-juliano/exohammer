@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
+
+from numpy import delete, all, array, inf, isfinite
 from exohammer.utilities import flatten_list
-import numpy as np
 
 
 def lnprior(theta, system):
@@ -12,8 +14,8 @@ def lnprior(theta, system):
 	for i in range(len(flat), 0, -1):
 		for j in index:
 			if i == j:
-				flat = np.delete(flat, j)
-	lp = 0. if np.all(minimum < flat) and np.all(flat < maximum) else -np.inf
+				flat = delete(flat, j)
+	lp = 0. if all(minimum < flat) and all(flat < maximum) else -inf
 	gaus = theta[index]
 	for i in range(len(index)):
 		g = (((gaus[i] - mu[i]) / sigma[i]) ** 2.) * -.5
@@ -26,21 +28,21 @@ def lnlike(theta, system):
 	sum_likelihood = 0
 
 	# RV
-	rvresid = np.array(flatten_list(system.rvmnvel)) - (np.array(flatten_list(rv_model)))
-	rv_likelihood = (np.array(rvresid) ** 2.)
+	rvresid = array(flatten_list(system.rvmnvel)) - (array(flatten_list(rv_model)))
+	rv_likelihood = (array(rvresid) ** 2.)
 
 	for i in rv_likelihood:
 		sum_likelihood += i
 
 	likelihood = -0.5 * sum_likelihood
-	if not np.isfinite(likelihood):
-		likelihood = -np.inf
+	if not isfinite(likelihood):
+		likelihood = -inf
 	return likelihood
 
 
 def lnprob(theta, system):
 	lp = lnprior(theta, system)
-	if not np.isfinite(lp):
-		return -np.inf
+	if not isfinite(lp):
+		return -inf
 	else:
 		return lp + lnlike(theta, system)
