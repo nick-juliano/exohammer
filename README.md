@@ -1,3 +1,6 @@
+![image](https://github.com/user-attachments/assets/bb36a18a-e5cb-4ad5-b11c-831d2a3e92f6)
+
+
 # exohammer
 #### The Exoplanet MCMC Hammer
 ___
