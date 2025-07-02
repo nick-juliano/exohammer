@@ -7,7 +7,7 @@ from exohammer.utilities import generate_planets
 
 def model_ttv(theta, system):
 	dt = 0.4
-	mstar = system.mstar
+	m_star = system.m_star
 	epoch = system.epoch
 	tmin = system.tmin - dt
 	tmax = system.tmax + dt
@@ -16,7 +16,7 @@ def model_ttv(theta, system):
 	planets = generate_planets(theta, system)
 	rv_model = None
 
-	model = ttvfast(planets, mstar, tmin, dt, tmax, rv_times=rvbjd)
+	model = ttvfast(planets, m_star, tmin, dt, tmax, rv_times=rvbjd)
 
 	mod = []
 	epo = []

@@ -37,7 +37,7 @@ class System:
         self.non_gaus_min = PlanetarySystem.non_gaus_min
         self.theta_ranges = PlanetarySystem.theta_ranges
 
-        self.mstar = Data.mstar
+        self.m_star = Data.m_star
         self.epoch = Data.epoch
         self.measured = Data.measured
         self.error = Data.error

@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from ttvfast import ttvfast
-from numpy import array, where, copy
+from numpy import array, where, copy, where
 from exohammer.utilities import generate_planets, au_per_day
 
 
 def model_both(theta, system):
     dt = 0.3
-
     model = ttvfast(generate_planets(theta, system),
-                            system.mstar,
+                            system.m_star,
                             system.tmin - dt,
                             dt,
                             system.tmax + dt,
@@ -20,7 +19,8 @@ def model_both(theta, system):
     mod = []
     epo = []
     model_index, model_epoch, model_time, _, _, = model['positions']
-    trim = min(where(array(model_time) == -2.))[0]
+    sentinel_indices = where(model_time == -2.)[0]
+    trim = sentinel_indices[0] if len(sentinel_indices) > 0 else len(model_time)
     model_index = array(model_index[:trim])
     model_epoch = array(model_epoch[:trim])
     model_time = array(model_time[:trim])

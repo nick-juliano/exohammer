@@ -28,7 +28,7 @@ class StoreRun:
         dump(pkl_object_planetary_system, file)
         file.close()
 
-        pkl_object_data = Data(sys.mstar,
+        pkl_object_data = Data(sys.m_star,
                                [sys.epoch, sys.measured, sys.error],
                                [sys.rvbjd, sys.rvmnvel, sys.rverrvel])
         filename = self.run.output_path + "pickle_data.obj"

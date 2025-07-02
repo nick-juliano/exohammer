@@ -4,10 +4,12 @@ from os import path, makedirs, getcwd
 from datetime import datetime
 from time import perf_counter
 from numpy import argmax
+import multiprocessing
 
 import emcee
 import corner
 import matplotlib.pyplot as plt
+from multiprocessing import Pool
 
 from exohammer.system import System
 from exohammer.store import StoreRun
@@ -87,49 +89,52 @@ class MCMCRun:
 		self.total_iterations = total_iterations
 		self.pos = self.system.initial_state(self.nwalkers)
 
-		sampler = emcee.EnsembleSampler(self.nwalkers,
-		                                self.system.ndim,
-		                                self.lnprob,
-		                                args=[self.system],
-		                                moves=self.moves,
-		                                live_dangerously=True)
+		num_cores = int(multiprocessing.cpu_count()/2)
+		with multiprocessing.get_context("fork").Pool(processes=num_cores) as pool:
+			sampler = emcee.EnsembleSampler(self.nwalkers,
+											self.system.ndim,
+											self.lnprob,
+											args=[self.system],
+											moves=self.moves,
+											live_dangerously=True,
+											pool=pool)
 
-		nrepeat = int(total_iterations / checkpoints)
-		completed = 0
-		times = []
+			nrepeat = int(total_iterations / checkpoints)
+			completed = 0
+			times = []
 
-		for i in range(nrepeat):
-			tic = perf_counter()
-			print("Steps completed: " + str(completed))
-			print("Run " + str(i) + " of " + str(nrepeat) + ", " + str(checkpoints) + " steps")
-			self.sampler = sampler
-			pos, prob, state = sampler.run_mcmc(self.pos,
-			                                    checkpoints,
-			                                    progress=verbose,
-			                                    tune=self.tune,
-			                                    skip_initial_state_check=True)
-			toc = perf_counter()
-			times.append(toc - tic)
-			print(times)
-			sampler_to_theta_max(self)
-			bic(self)
-			self.pos = pos
-			self.prob = prob
-			self.state = state
-			run = self
-			store = StoreRun(run)
-			store.store_csvs()
-			run.plot_chains()
-			run.autocorr()
-			run.plot_ttvs()
-			run.plot_rvs()
-			run.summarize()
-			run.plot_corner()
-			sampler_to_theta_max(self)
-			self.niter += int(checkpoints)
-			self.discard = int(self.niter * burnin_factor)
-			self.thin = int(self.niter * thinning_factor)
-			completed += checkpoints
+			for i in range(nrepeat):
+				tic = perf_counter()
+				print("Steps completed: " + str(completed))
+				print("Run " + str(i) + " of " + str(nrepeat) + ", " + str(checkpoints) + " steps")
+				self.sampler = sampler
+				pos, prob, state = sampler.run_mcmc(self.pos,
+													checkpoints,
+													progress=verbose,
+													tune=self.tune,
+													skip_initial_state_check=True)
+				toc = perf_counter()
+				times.append(toc - tic)
+				print(times)
+				sampler_to_theta_max(self)
+				bic(self)
+				self.pos = pos
+				self.prob = prob
+				self.state = state
+				run = self
+				store = StoreRun(run)
+				store.store_csvs()
+				run.plot_chains()
+				run.autocorr()
+				run.plot_ttvs()
+				run.plot_rvs()
+				run.summarize()
+				run.plot_corner()
+				sampler_to_theta_max(self)
+				self.niter += int(checkpoints)
+				self.discard = int(self.niter * burnin_factor)
+				self.thin = int(self.niter * thinning_factor)
+				completed += checkpoints
 		print("Run complete")
 
 	def plot_corner(self, samples=None, save=True):

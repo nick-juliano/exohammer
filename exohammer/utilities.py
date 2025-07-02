@@ -124,58 +124,31 @@ def flatten_list(_2d_list):
             flat_list.append(element)
     return flat_list
 
-
 def generate_planets(theta, system):
-    """
-
-    Args:
-        theta (list): A list of orbital elements (typically generated within an MCMC run)
-        system (object): A system instance
-
-    Returns:
-        (list[Planets]): A list of planet instances for use in TTVFast
-    """
     nplanets = system.nplanets_rvs
-    fixed_labels = system.fixed_labels
-    fixed_values = system.fixed
-    variable_labels = system.variable_labels
-    orb_elements = []
+    planet_labels = ['b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
+    element_keys = ['mass', 'period', 'eccentricity', 'inclination',
+                    'longnode', 'argument', 'mean_anomaly']
 
-    for i in range(len(fixed_values)):
-        orb_elements.append({'element': fixed_labels[i],
-                             'value': fixed_values[i]})
-
-    for i in range(len(variable_labels)):
-        orb_elements.append({'element': variable_labels[i],
-                             'value': theta[i]})
+    # Combine fixed and variable parameters
+    orb_elements = dict(zip(system.fixed_labels, system.fixed))
+    orb_elements.update(zip(system.variable_labels, theta))
 
     planets = []
-    planet_designation = ['b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
     for j in range(nplanets):
-        for i in orb_elements:
-            if i['element'] == 'mass_' + planet_designation[j]:
-                mass = i['value']
-            elif i['element'] == 'period_' + planet_designation[j]:
-                period = i['value']
-            elif i['element'] == 'eccentricity_' + planet_designation[j]:
-                eccentricity = i['value']
-            elif i['element'] == 'inclination_' + planet_designation[j]:
-                inclination = i['value']
-            elif i['element'] == 'longnode_' + planet_designation[j]:
-                longnode = i['value']
-            elif i['element'] == 'argument_' + planet_designation[j]:
-                argument = i['value']
-            elif i['element'] == 'mean_anomaly_' + planet_designation[j]:
-                mean_anomaly = i['value']
-
-        planet = models.Planet(mass=mass,  # M_sun
-                               period=period,  # days
-                               eccentricity=eccentricity,
-                               inclination=inclination,  # degrees
-                               longnode=longnode,  # degrees
-                               argument=argument,  # degrees
-                               mean_anomaly=mean_anomaly)  # degrees
+        label = planet_labels[j]
+        params = {key: orb_elements[f"{key}_{label}"] for key in element_keys}
+        planet = models.Planet(
+            mass=params['mass'],
+            period=params['period'],
+            eccentricity=params['eccentricity'],
+            inclination=params['inclination'],
+            longnode=params['longnode'],
+            argument=params['argument'],
+            mean_anomaly=params['mean_anomaly']
+        )
         planets.append(planet)
+
     return planets
 
 

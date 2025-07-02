@@ -44,6 +44,7 @@ class PlanetarySystem:
 
         for i in orbital_elements:
             element = orbital_elements[i]
+            # List of length 1 == fixed param
             if len(element) == 1:
                 fixed_labels.append(str(i))
                 k += 1
@@ -51,7 +52,7 @@ class PlanetarySystem:
                 non_gaus.append(element[0])
                 non_gaus_max.append(element[0] + element[0] / 1.e9)
                 non_gaus_min.append(element[0] - element[0] / 1.e9)
-
+            # List of length 2 == flat params
             if len(element) == 2:
                 minimum = element[0]
                 maximum = element[1]
@@ -64,7 +65,7 @@ class PlanetarySystem:
                 non_gaus.append(element)
                 non_gaus_max.append(maximum)
                 non_gaus_min.append(minimum)
-
+            # List of length 3 == gaussian params
             if len(element) == 3:
                 index.append((i - k) + (len(orbital_elements)))
                 mu.append(element[0])
