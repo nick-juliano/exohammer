@@ -15,7 +15,7 @@ _A python library designed to provide utility for performing bayesian analysis o
 ___
 exohammer is pip installable:
 
-'pip install exohammer'
+`pip install exohammer`
 
 If you prefer to install from source code you can follow these steps:
 Once you clone/fork/download/obtain this repo on your local machine, you can install the library by following these steps:
