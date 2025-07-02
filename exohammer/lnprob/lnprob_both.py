@@ -11,7 +11,7 @@ def lnprior(theta, system):
 	minimum = system.theta_min
 	maximum = system.theta_max
 
-	(delete(flat, j) for j in index for i in range(len(flat), 0, -1) if i == j)
+	flat = delete(flat, index)
 
 	lp = 0. if all(minimum < flat) and all(flat < maximum) else -inf
 
