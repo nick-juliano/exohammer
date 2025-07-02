@@ -19,5 +19,6 @@ exohammer/__pycache__/utilities.cpython-38.pyc
 __pycache__/Input_Measurements.cpython-38.pyc
 exohammer/model/.DS_Store
 exohammer/lnprob/.DS_Store
+task_management/
 .idea
 .DS_Store
