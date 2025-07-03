@@ -12,7 +12,7 @@ Welcome to exohammer's documentation!
 
    usage
    modules
-   examples/demo.ipynb
+   examples/demo
 
 
 Indices and tables
