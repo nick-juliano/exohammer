@@ -1,20 +1,15 @@
-Exohammer API Reference
-========================
+ExoHammer Modules
+=================
 
-.. automodule:: exohammer
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. toctree::
+   :maxdepth: 2
+   :caption: API Reference
 
-.. automodule:: exohammer.mcmc_run
-   :members:
-   :undoc-members:
-
-.. automodule:: exohammer.data
-   :members:
-
-.. automodule:: exohammer.store
-   :members:
-
-.. automodule:: exohammer.utilities
-   :members:
+   exohammer.model
+   exohammer.mcmc_run
+   exohammer.lnprob
+   exohammer.utilities
+   exohammer.system
+   exohammer.planetary_system
+   exohammer.store
+   exohammer.data

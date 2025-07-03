@@ -1,0 +1,361 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>exohammer.utilities &mdash; exohammer 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="canonical" href="https://nick-juliano.github.io/exohammer/exohammer.utilities.html" />
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=2389946f"></script>
+      <script src="_static/doctools.js?v=888ff710"></script>
+      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="exohammer.system" href="exohammer.system.html" />
+    <link rel="prev" title="exohammer.lnprob" href="exohammer.lnprob.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            exohammer
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Exohammer Documentation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">ExoHammer Modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="exohammer.model.html">exohammer.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exohammer.mcmc_run.html">exohammer.mcmc_run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exohammer.lnprob.html">exohammer.lnprob</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">exohammer.utilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#exohammer.utilities.best_fit"><code class="docutils literal notranslate"><span class="pre">best_fit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#exohammer.utilities.bic"><code class="docutils literal notranslate"><span class="pre">bic()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#exohammer.utilities.flatten_list"><code class="docutils literal notranslate"><span class="pre">flatten_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#exohammer.utilities.generate_planets"><code class="docutils literal notranslate"><span class="pre">generate_planets()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#exohammer.utilities.plot_periodogram"><code class="docutils literal notranslate"><span class="pre">plot_periodogram()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#exohammer.utilities.plot_rvs"><code class="docutils literal notranslate"><span class="pre">plot_rvs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#exohammer.utilities.plot_ttvs"><code class="docutils literal notranslate"><span class="pre">plot_ttvs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#exohammer.utilities.sampler_to_theta_max"><code class="docutils literal notranslate"><span class="pre">sampler_to_theta_max()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#exohammer.utilities.sun_to_earth"><code class="docutils literal notranslate"><span class="pre">sun_to_earth()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#exohammer.utilities.trim"><code class="docutils literal notranslate"><span class="pre">trim()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#exohammer.utilities.ttvs"><code class="docutils literal notranslate"><span class="pre">ttvs()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="exohammer.system.html">exohammer.system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exohammer.planetary_system.html">exohammer.planetary_system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exohammer.store.html">exohammer.store</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exohammer.data.html">exohammer.data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples/demo.html">Demo: Using Exohammer End-to-End</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">exohammer</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">ExoHammer Modules</a></li>
+      <li class="breadcrumb-item active">exohammer.utilities</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/exohammer.utilities.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="module-exohammer.utilities">
+<span id="exohammer-utilities"></span><h1>exohammer.utilities<a class="headerlink" href="#module-exohammer.utilities" title="Permalink to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="exohammer.utilities.best_fit">
+<span class="sig-prename descclassname"><span class="pre">exohammer.utilities.</span></span><span class="sig-name descname"><span class="pre">best_fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/exohammer/utilities.html#best_fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#exohammer.utilities.best_fit" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>list</em>) – x values</p></li>
+<li><p><strong>y</strong> (<em>list</em>) – y values</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple of slope and intercept.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(tuple)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="exohammer.utilities.bic">
+<span class="sig-prename descclassname"><span class="pre">exohammer.utilities.</span></span><span class="sig-name descname"><span class="pre">bic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/exohammer/utilities.html#bic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#exohammer.utilities.bic" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the Bayesian Information Criterion of an MCMC run. Both returns the value and adds it to the run object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>run</strong> (<em>object</em>) – An explored MCMC run</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The bayesian information criterion</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="exohammer.utilities.flatten_list">
+<span class="sig-prename descclassname"><span class="pre">exohammer.utilities.</span></span><span class="sig-name descname"><span class="pre">flatten_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_2d_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/exohammer/utilities.html#flatten_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#exohammer.utilities.flatten_list" title="Permalink to this definition"></a></dt>
+<dd><p>Converts 2-dimensional list to 1-dimensional list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_2d_list</strong> (<em>list</em>) – list</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>flattened list</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="exohammer.utilities.generate_planets">
+<span class="sig-prename descclassname"><span class="pre">exohammer.utilities.</span></span><span class="sig-name descname"><span class="pre">generate_planets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/exohammer/utilities.html#generate_planets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#exohammer.utilities.generate_planets" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<em>list</em>) – A list of orbital elements (typically generated within an MCMC run)</p></li>
+<li><p><strong>system</strong> (<em>object</em>) – A system instance</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of planet instances for use in TTVFast</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(list[Planets])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="exohammer.utilities.plot_periodogram">
+<span class="sig-prename descclassname"><span class="pre">exohammer.utilities.</span></span><span class="sig-name descname"><span class="pre">plot_periodogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/exohammer/utilities.html#plot_periodogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#exohammer.utilities.plot_periodogram" title="Permalink to this definition"></a></dt>
+<dd><p>Plots the periodogram of radial velocity measurements</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>list</em>) – The list of times</p></li>
+<li><p><strong>rv</strong> (<em>list</em>) – The radial velocity values at each time</p></li>
+<li><p><strong>title</strong> (<em>str</em>) – The title of the plot</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="exohammer.utilities.plot_rvs">
+<span class="sig-prename descclassname"><span class="pre">exohammer.utilities.</span></span><span class="sig-name descname"><span class="pre">plot_rvs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bjd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rv_err</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rv_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">silent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/exohammer/utilities.html#plot_rvs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#exohammer.utilities.plot_rvs" title="Permalink to this definition"></a></dt>
+<dd><p>Plot radial velocities</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bjd</strong> (<em>list</em>) – The time of the rv measurements</p></li>
+<li><p><strong>rv</strong> (<em>list</em>) – The measured rvs</p></li>
+<li><p><strong>rv_err</strong> (<em>list</em>) – The measured rv errors</p></li>
+<li><p><strong>rv_model</strong> (<em>list</em>) – The modeled rvs</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – Where to save the files</p></li>
+<li><p><strong>silent</strong> (<em>bool</em>) – Specifies if the plot should be rendered in the IDE or simply saved</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="exohammer.utilities.plot_ttvs">
+<span class="sig-prename descclassname"><span class="pre">exohammer.utilities.</span></span><span class="sig-name descname"><span class="pre">plot_ttvs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nplanets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">silent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/exohammer/utilities.html#plot_ttvs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#exohammer.utilities.plot_ttvs" title="Permalink to this definition"></a></dt>
+<dd><p>Plot the ttvs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nplanets</strong> (<em>int</em>) – The number of planets</p></li>
+<li><p><strong>measured</strong> (<em>list</em>) – The list of measured ttvs</p></li>
+<li><p><strong>epoch</strong> (<em>list</em>) – The epochs of the measured ttvs</p></li>
+<li><p><strong>error</strong> (<em>list</em>) – The errors of the measured ttvs</p></li>
+<li><p><strong>model</strong> (<em>list</em>) – The list of modeled ttvs</p></li>
+<li><p><strong>model_epoch</strong> (<em>list</em>) – The epochs of the modeled ttvs</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – Where to save the output files</p></li>
+<li><p><strong>silent</strong> (<em>bool</em>) – Specifies if the plot should be rendered in the IDE or simply saved</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="exohammer.utilities.sampler_to_theta_max">
+<span class="sig-prename descclassname"><span class="pre">exohammer.utilities.</span></span><span class="sig-name descname"><span class="pre">sampler_to_theta_max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/exohammer/utilities.html#sampler_to_theta_max"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#exohammer.utilities.sampler_to_theta_max" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the theta value with the highest lnprob. Both returns the value and adds it to the run object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>run</strong> (<em>object</em>) – An explored MCMC run</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The theta value with the highest lnprob</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="exohammer.utilities.sun_to_earth">
+<span class="sig-prename descclassname"><span class="pre">exohammer.utilities.</span></span><span class="sig-name descname"><span class="pre">sun_to_earth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solar_mass</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/exohammer/utilities.html#sun_to_earth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#exohammer.utilities.sun_to_earth" title="Permalink to this definition"></a></dt>
+<dd><p>Converts Solar mass to Earth mass
+:param solar_mass: solar mass value
+:type solar_mass: float</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Earth mass</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="exohammer.utilities.trim">
+<span class="sig-prename descclassname"><span class="pre">exohammer.utilities.</span></span><span class="sig-name descname"><span class="pre">trim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nplanets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flatten</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/exohammer/utilities.html#trim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#exohammer.utilities.trim" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nplanets</strong> (<em>int</em>) – The number of planets</p></li>
+<li><p><strong>epoch</strong> (<em>list</em>) – A list of epochs</p></li>
+<li><p><strong>measured</strong> (<em>list</em>) – A list of measured values</p></li>
+<li><p><strong>model</strong> (<em>list</em>) – A list of modeled values</p></li>
+<li><p><strong>error</strong> (<em>list</em>) – A list of errors</p></li>
+<li><p><strong>flatten</strong> (<em>bool</em>) – whether to return the list as flattened numpy arrays or multidimensional lists</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>model, measured, error, epoch lists trimmed to the shortest list length</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(tuple)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="exohammer.utilities.ttvs">
+<span class="sig-prename descclassname"><span class="pre">exohammer.utilities.</span></span><span class="sig-name descname"><span class="pre">ttvs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">measured</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/exohammer/utilities.html#ttvs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#exohammer.utilities.ttvs" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>measured</strong> (<em>list</em>) – transit mid-points</p></li>
+<li><p><strong>epoch</strong> (<em>list</em>) – epoch of each transit mid-point</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>transit timing variations</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="exohammer.lnprob.html" class="btn btn-neutral float-left" title="exohammer.lnprob" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="exohammer.system.html" class="btn btn-neutral float-right" title="exohammer.system" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Nick Juliano.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

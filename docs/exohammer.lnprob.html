@@ -6,12 +6,12 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to exohammer’s documentation! &mdash; exohammer 0.1.0 documentation</title>
+  <title>exohammer.lnprob &mdash; exohammer 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
-    <link rel="canonical" href="https://nick-juliano.github.io/exohammer/index.html" />
+    <link rel="canonical" href="https://nick-juliano.github.io/exohammer/exohammer.lnprob.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=2389946f"></script>
@@ -21,7 +21,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Exohammer Documentation" href="usage.html" /> 
+    <link rel="next" title="exohammer.utilities" href="exohammer.utilities.html" />
+    <link rel="prev" title="exohammer.mcmc_run" href="exohammer.mcmc_run.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -32,7 +33,7 @@
 
           
           
-          <a href="#" class="icon icon-home">
+          <a href="index.html" class="icon icon-home">
             exohammer
           </a>
 <div role="search">
@@ -44,9 +45,19 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Exohammer Documentation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">ExoHammer Modules</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">ExoHammer Modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="exohammer.model.html">exohammer.model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exohammer.mcmc_run.html">exohammer.mcmc_run</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">exohammer.lnprob</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exohammer.utilities.html">exohammer.utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exohammer.system.html">exohammer.system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exohammer.planetary_system.html">exohammer.planetary_system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exohammer.store.html">exohammer.store</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exohammer.data.html">exohammer.data</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="examples/demo.html">Demo: Using Exohammer End-to-End</a></li>
 </ul>
 
@@ -56,17 +67,18 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">exohammer</a>
+          <a href="index.html">exohammer</a>
       </nav>
 
       <div class="wy-nav-content">
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Welcome to exohammer’s documentation!</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">ExoHammer Modules</a></li>
+      <li class="breadcrumb-item active">exohammer.lnprob</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/exohammer.lnprob.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -98,50 +110,16 @@
     text-align: unset;
 }
 </style>
-<section id="welcome-to-exohammer-s-documentation">
-<h1>Welcome to exohammer’s documentation!<a class="headerlink" href="#welcome-to-exohammer-s-documentation" title="Permalink to this heading"></a></h1>
-<div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="usage.html">Exohammer Documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#installation">📦 Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#quickstart">🚀 Quickstart</a></li>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#modules">📚 Modules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#plotting">📈 Plotting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#saving-results">💾 Saving Results</a></li>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#development">🧪 Development</a></li>
-<li class="toctree-l2"><a class="reference internal" href="usage.html#citations">🔗 Citations</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">ExoHammer Modules</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="exohammer.model.html">exohammer.model</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exohammer.mcmc_run.html">exohammer.mcmc_run</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exohammer.lnprob.html">exohammer.lnprob</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exohammer.utilities.html">exohammer.utilities</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exohammer.system.html">exohammer.system</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exohammer.planetary_system.html">exohammer.planetary_system</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exohammer.store.html">exohammer.store</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exohammer.data.html">exohammer.data</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="examples/demo.html">Demo: Using Exohammer End-to-End</a></li>
-</ul>
-</div>
-</section>
-<section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this heading"></a></h1>
-<ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
-</ul>
+<section id="module-exohammer.lnprob">
+<span id="exohammer-lnprob"></span><h1>exohammer.lnprob<a class="headerlink" href="#module-exohammer.lnprob" title="Permalink to this heading"></a></h1>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="usage.html" class="btn btn-neutral float-right" title="Exohammer Documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="exohammer.mcmc_run.html" class="btn btn-neutral float-left" title="exohammer.mcmc_run" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="exohammer.utilities.html" class="btn btn-neutral float-right" title="exohammer.utilities" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
