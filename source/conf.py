@@ -52,6 +52,10 @@ exclude_patterns = []
 
 # -- Options for HTML output -------------------------------------------------
 
+html_baseurl = "https://nick-juliano.github.io/exohammer/"
+html_theme_options = {
+    'canonical_url': 'https://nick-juliano.github.io/exohammer/',
+}
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
