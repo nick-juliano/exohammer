@@ -1,0 +1,13 @@
+astropy==4.0.1.post1
+corner==2.1.0
+emcee==3.0.2
+matplotlib==3.2.2
+numpy==1.19.5
+pandas==1.0.5
+ttvfast==0.3.0
+easygui==0.98.3
+
+[extras]
+pickle
+matplotlib
+easygui

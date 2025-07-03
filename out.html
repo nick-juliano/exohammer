@@ -1,0 +1,159 @@
+<h1>exohammer</h1>
+<h4>The Exoplanet MCMC Hammer</h4>
+<hr>
+<p><em>A python library designed to provide utility for performing bayesian analysis on n-body planetary systems with any combination of TTV and RV measurements.</em></p>
+<h2>Installation</h2>
+<hr>
+<p>Once you clone/fork/download/etc this repo on your local machine, you can install the library by following these steps:</p>
+<ul>
+<li>cd into the directory</li>
+<li>run <code>pip install .</code></li>
+</ul>
+<h2>Usage</h2>
+<hr>
+<ul>
+<li>
+<p>Define <em>RV</em> and <em>TTV</em> nested lists in the following form:</p>
+<ul>
+<li><strong>TTV</strong>: <code>TTV = [[epoch_b, epoch_c], [TT_b,TT_c], [error_b, error_c]]</code>
+<ul>
+<li>...and so on for each additional planet</li>
+</ul>
+</li>
+<li><strong>RV</strong>: <code>RV = [[BJD], [mean_velocity], [velocity_error]]</code></li>
+</ul>
+</li>
+<li>
+<p>Define your orbital elements (mass, period, eccentricity, inclination, longitude of ascending node, argument of periastron, mean anomaly) in dictionary form.</p>
+<ul>
+<li>each key-value pair should be of the form "element_b" : [value]</li>
+<li>regarding each value:
+<ul>
+<li>[value] denotes a fixed element</li>
+<li>[minimum, maximum] denotes a flat prior with hard bounds</li>
+<li>[mu, sigma, 0] denotes a gaussian prior</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Pass your orbital elements into a <code>PlanetarySystem</code> instance along with the number of planets you are fitting to the included data.</p>
+</li>
+<li>
+<p>Pass your TTVs, RVs, and orbital elements into a <code>Data</code> instance along with the mass of the host star in units of m_sun</p>
+</li>
+<li>
+<p>Pass your <code>PlanetarySystem</code> and <code>Data</code> instances into an <code>MCMCRun</code> instance and advance the chain iteratively using the MCMCRun.explore_iteratively() method</p>
+</li>
+</ul>
+<p>Toy Example:</p>
+<pre lang="python3"><span class="kn">import</span> <span class="nn">exohammer</span> <span class="k">as</span> <span class="nn">exo</span>
+<span class="kn">import</span> <span class="nn">emcee</span>
+<span class="c1"># Define TTV Parameters</span>
+
+<span class="n">epoch_b</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
+<span class="n">tt_b</span> <span class="o">=</span> <span class="p">[</span><span class="mf">24500.10</span><span class="p">,</span> <span class="mf">245010.32</span><span class="p">,</span> <span class="mf">245029.97</span><span class="p">,</span> <span class="mf">245041.26</span><span class="p">]</span>
+<span class="n">error_b</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.02</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.028</span><span class="p">,</span> <span class="mf">0.012</span><span class="p">]</span>
+<span class="c1">## repeat for all planets, then combine as below</span>
+<span class="n">ttv</span> <span class="o">=</span> <span class="p">[[</span><span class="n">epoch_b</span><span class="p">,</span> <span class="n">epoch_c</span><span class="p">],</span> <span class="p">[</span><span class="n">TT_b</span><span class="p">,</span> <span class="n">TT_c</span><span class="p">],</span> <span class="p">[</span><span class="n">error_b</span><span class="p">,</span> <span class="n">error_c</span><span class="p">]]</span>
+
+<span class="c1"># Define RV Parameters</span>
+
+<span class="n">rv_bjd</span> <span class="o">=</span> <span class="p">[</span><span class="mf">2456138.960111</span><span class="p">,</span> <span class="mf">2456202.74719</span><span class="p">,</span> <span class="mf">2456880.986613</span><span class="p">],</span>
+<span class="n">rv_mnvel</span> <span class="o">=</span> <span class="p">[</span><span class="mf">2.26</span><span class="p">,</span> <span class="o">-</span><span class="mf">4.6378</span><span class="p">,</span> <span class="o">-</span><span class="mf">6.48</span><span class="p">],</span>
+<span class="n">rv_err</span> <span class="o">=</span> <span class="p">[</span><span class="mf">3.21964406967163</span><span class="p">,</span> <span class="mf">4.39822244644165</span><span class="p">,</span> <span class="mf">4.03610754013062</span><span class="p">]</span>
+<span class="c1">## combine as below</span>
+<span class="n">rv</span> <span class="o">=</span> <span class="p">[</span><span class="n">rv_bjd</span><span class="p">,</span> <span class="n">rv_mnvel</span><span class="p">,</span> <span class="n">rv_err</span><span class="p">]</span>
+
+<span class="c1"># Define orbital elements</span>
+
+<span class="n">orbital_elements</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'mass_b'</span> <span class="p">:</span> <span class="p">[</span><span class="mf">.000001</span><span class="p">],</span> <span class="c1"># m_sun, fixed value</span>
+                    <span class="s1">'period_b'</span> <span class="p">:</span> <span class="p">[</span><span class="mf">13.849</span> <span class="o">-</span> <span class="mf">.05</span><span class="p">,</span> <span class="mf">13.849</span> <span class="o">+</span> <span class="mf">.05</span><span class="p">],</span> <span class="c1"># Days, flat prior  </span>
+                    <span class="s1">'eccentricity_b'</span> <span class="p">:</span> <span class="p">[</span><span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">],</span> <span class="c1"># gaussian prior</span>
+                    <span class="s1">'inclination_b'</span> <span class="p">:</span> <span class="p">[</span><span class="mf">89.5</span><span class="p">,</span> <span class="mf">90.5</span><span class="p">],</span> <span class="c1"># Degrees</span>
+                    <span class="s1">'longnode_b'</span> <span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">45.0</span><span class="p">,</span> <span class="mf">45.0</span><span class="p">],</span> <span class="c1"># Degrees</span>
+                    <span class="s1">'argument_b'</span> <span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">360.0</span><span class="p">],</span> <span class="c1"># Degrees</span>
+                    <span class="s1">'mean_anomaly_b'</span> <span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">360.0</span><span class="p">],</span> <span class="c1"># Degrees</span>
+
+                    <span class="s1">'mass_c'</span>         <span class="p">:</span> <span class="p">[</span><span class="mf">.000001</span><span class="p">],</span> <span class="c1"># fixed value</span>
+                    <span class="s1">'period_c'</span>       <span class="p">:</span> <span class="p">[</span><span class="mf">16.0</span> <span class="o">-</span> <span class="mf">.05</span><span class="p">,</span> <span class="mf">16.0</span> <span class="o">+</span> <span class="mf">.05</span><span class="p">],</span> <span class="c1"># flat prior           </span>
+                    <span class="s1">'eccentricity_c'</span> <span class="p">:</span> <span class="p">[</span><span class="mf">0.00</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="c1"># gaussian prior</span>
+                    <span class="s1">'inclination_c'</span>  <span class="p">:</span> <span class="p">[</span><span class="mf">89.5</span><span class="p">,</span> <span class="mf">90.5</span><span class="p">],</span>
+                    <span class="s1">'longnode_c'</span>     <span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">],</span>
+                    <span class="s1">'argument_c'</span>     <span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">360.0</span><span class="p">],</span>
+                    <span class="s1">'mean_anomaly_c'</span> <span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">360.0</span><span class="p">]}</span>
+
+<span class="c1"># Pass orbital elements into planetary system instance</span>
+<span class="n">kepler_xx</span> <span class="o">=</span> <span class="n">exo</span><span class="o">.</span><span class="n">planetary_system</span><span class="o">.</span><span class="n">PlanetarySystem</span><span class="p">(</span><span class="n">nplanets_ttvs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> 
+                                                 <span class="n">nplanets_rvs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> 
+                                                 <span class="n">orbital_elements</span><span class="o">=</span><span class="n">orbital_elements</span><span class="p">,</span> 
+                                                 <span class="n">theta</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+                                                
+<span class="n">data</span> <span class="o">=</span> <span class="n">exo</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Data</span><span class="p">(</span><span class="n">mstar</span><span class="p">,</span> <span class="p">[</span><span class="n">epoch</span><span class="p">,</span> <span class="n">measured</span><span class="p">,</span> <span class="n">error</span><span class="p">],</span> <span class="n">rv</span><span class="p">)</span>
+
+<span class="c1"># Pass TTVs and RVs into a `Data` instance</span>
+<span class="n">mstar</span> <span class="o">=</span> <span class="mf">1.2</span> <span class="c1"># m_sun</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">exo</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Data</span><span class="p">(</span><span class="n">mstar</span><span class="p">,</span> <span class="n">ttv</span><span class="p">,</span> <span class="n">rv</span><span class="p">)</span>
+
+<span class="c1"># Instantiate MCMCRun instance and perform fit</span>
+<span class="n">run</span> <span class="o">=</span> <span class="n">exo</span><span class="o">.</span><span class="n">mcmc_run</span><span class="o">.</span><span class="n">MCMCRun</span><span class="p">(</span><span class="n">kepler_xx</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+<span class="n">run</span><span class="o">.</span><span class="n">explore_iteratively</span><span class="p">(</span><span class="n">total_iterations</span><span class="o">=</span><span class="mi">100000000</span><span class="p">,</span> <span class="c1">#The total number of steps to advance your chains</span>
+                        <span class="n">checkpoints</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="c1">#At this number of steps, the run will save your run for incremental evaluation</span>
+                        <span class="n">burnin_factor</span><span class="o">=</span><span class="mf">.2</span><span class="p">,</span> <span class="c1">#Percentage of the run to discard as burn in.</span>
+                        <span class="n">thinning_factor</span><span class="o">=</span><span class="mf">.0001</span><span class="p">,</span> <span class="c1">#Percentage of the run to thin the entire run by</span>
+	                    <span class="n">moves</span><span class="o">=</span><span class="p">[(</span><span class="n">emcee</span><span class="o">.</span><span class="n">moves</span><span class="o">.</span><span class="n">DEMove</span><span class="p">(</span><span class="n">live_dangerously</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="mf">0.9</span><span class="p">),</span> <span class="p">(</span><span class="n">emcee</span><span class="o">.</span><span class="n">moves</span><span class="o">.</span><span class="n">DESnookerMove</span><span class="p">(</span><span class="n">live_dangerously</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="mf">0.1</span><span class="p">),],</span> <span class="c1">#See https://emcee.readthedocs.io/en/stable/tutorials/moves/</span>
+	                    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="c1">#Show progress bar</span>
+                        <span class="n">tune</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="c1">#Passes to emcee.EnsembleSampler.sample. 'True' recommended</span>
+                        <span class="n">silent</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="c1">#Whether to display plots directly in the IDE</span>
+                        <span class="p">)</span>
+</pre>
+<h3>Additional Utilities</h3>
+<h3>To review the success of the run</h3>
+<pre lang="python3"><span class="n">run</span><span class="o">.</span><span class="n">plot_rvs</span><span class="p">()</span>    <span class="c1"># plots the RVs of the posterior planetary system </span>
+                  <span class="c1"># and compares it to the input data</span>
+<span class="n">run</span><span class="o">.</span><span class="n">plot_ttvs</span><span class="p">()</span>   <span class="c1"># plots the TTVs of the posterior planetary system </span>
+                  <span class="c1"># and compares it to the input data</span>
+<span class="n">run</span><span class="o">.</span><span class="n">autocorr</span><span class="p">()</span>     <span class="c1"># determines the autocorrelation of each parameter</span>
+<span class="n">run</span><span class="o">.</span><span class="n">plot_corner</span><span class="p">()</span>  <span class="c1"># plots the parameters in a corner plot</span>
+<span class="n">run</span><span class="o">.</span><span class="n">plot_chains</span><span class="p">()</span>  <span class="c1"># plots the path of each parameter</span>
+</pre>
+<h4>Storing</h4>
+<pre lang="python3"><span class="c1"># Storing</span>
+<span class="n">store</span> <span class="o">=</span> <span class="n">exo</span><span class="o">.</span><span class="n">store</span><span class="o">.</span><span class="n">StoreRun</span><span class="p">(</span><span class="n">run</span><span class="p">)</span>
+<span class="n">store</span><span class="o">.</span><span class="n">store_csvs</span><span class="p">()</span> <span class="c1">#stores Data instance (serialized) and most other attributes as csv files</span>
+<span class="n">store</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span> <span class="c1">#stores entire run in serialized format (very large)</span>
+<span class="n">store</span><span class="o">.</span><span class="n">restore</span><span class="p">()</span> <span class="c1">#reloades the serialized and stored output of store.serialize()</span>
+
+<span class="c1"># Note that the save directory and naming is automatic, determined by initialization of MCMCRun. </span>
+<span class="c1"># Work to give saving/naming flexibility is ongoing. </span>
+</pre>
+<p>Every <code>checkpoint</code> steps of an <code>explore_iteratively()</code> MCMC run, <code>store_csvs()</code> is executed.</p>
+<p>Note that the save directory and naming is automatic, determined by initialization of <code>MCMCRun</code>. Work to give saving/naming flexibility is ongoing.</p>
+<p>These methods are automatically executed every <code>checkpoint</code> steps of an <code>explore_iteratively</code> MCMC run.</p>
+<hr>
+<p>Please see the code/docstrings for further information. Bugs, recommendations, and questions can be directed to me directly (<a href="mailto:nick_juliano@icloud.com" rel="nofollow">nick_juliano@icloud.com</a>).</p>
+<h2>Citations</h2>
+<hr>
+<h3>TTVFast</h3>
+<p>This code relies extensively on <em>TTVFast</em> (<a href="https://github.com/mindriot101/ttvfast-python" rel="nofollow">https://github.com/mindriot101/ttvfast-python</a>) for modeling planetary systems. If you use this code, please cite:</p>
+<p>Deck, Agol, Holman, &amp; Nesvorny (2014), ApJ, 787, 132, arXiv:1403.1895.</p>
+<p>-Katherine Deck, Eric Agol, Matt Holman, &amp; David Nesvorny</p>
+<h3>Emcee</h3>
+<p>This code also relies heavily on Emcee (<a href="https://github.com/dfm/emcee" rel="nofollow">https://github.com/dfm/emcee</a>) for ensemble sampling.</p>
+<p>Please cite Foreman-Mackey, Hogg, Lang &amp; Goodman (2012)
+(<a href="https://arxiv.org/abs/1202.3665" rel="nofollow">https://arxiv.org/abs/1202.3665</a>) if you find this code useful in your
+research. The BibTeX entry for the paper is::</p>
+<pre><code>@article{emcee,
+   author = {{Foreman-Mackey}, D. and {Hogg}, D.~W. and {Lang}, D. and {Goodman}, J.},
+    title = {emcee: The MCMC Hammer},
+  journal = {PASP},
+     year = 2013,
+   volume = 125,
+    pages = {306-312},
+   eprint = {1202.3665},
+      doi = {10.1086/670067}
+}
+</code></pre>
+<hr>
+
