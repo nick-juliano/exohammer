@@ -38,6 +38,7 @@ extensions = ["myst_parser",
               'sphinx.ext.autodoc',
               'sphinx.ext.napoleon',  # for Google/NumPy style docstrings
               'sphinx.ext.viewcode',  # optional: adds links to source
+              'nbsphinx',
               ]
 
 source_suffix = {
