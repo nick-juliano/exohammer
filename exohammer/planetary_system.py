@@ -1,76 +1,118 @@
-# -*- coding: utf-8 -*-
+"""
+Planetary System Configuration Module
+
+Defines the `PlanetarySystem` class, which stores parameter definitions and
+prior structures for each planet to be used in transit timing variation (TTV)
+and radial velocity (RV) modeling.
+
+Supports fixed values, uniform priors (2-element lists), and Gaussian priors (3-element lists).
+"""
 
 from numpy import linspace, random
 
+
 class PlanetarySystem:
     """
-        PlanetarySystem Class
+    Defines the planetary system's orbital elements, priors, and labeling.
 
-        To be initialized and passed into a `System` instance.
+    To be passed into a `System` instance to initialize the modeling pipeline.
+
+    Supports three types of orbital element definitions:
+        - [val]: fixed parameter
+        - [min, max]: uniform prior
+        - [mu, sigma, _]: Gaussian prior (third value is ignored, used for compatibility)
+
+    Attributes:
+        orbital_elements (dict): User-specified parameter definitions.
+        nplanets_ttvs (int): Number of planets with TTV data.
+        nplanets_rvs (int): Number of planets with RV data.
+        theta (list): Optional vector of parameters for evaluating previous fits.
+
+        p0 (list): Initial parameter vector (random from uniform priors).
+        ndim (int): Number of free parameters.
+        fixed (list): Fixed parameters (not sampled).
+        theta_min (list): Lower bounds of free parameters.
+        theta_max (list): Upper bounds of free parameters.
+        variable_labels (list): Labels for free parameters.
+        fixed_labels (list): Labels for fixed parameters.
+        sigma (list): Standard deviations for Gaussian priors.
+        mu (list): Means for Gaussian priors.
+        index (list): Indices used to align Gaussian priors.
+        non_gaus (list): All non-Gaussian priors (uniform or fixed).
+        non_gaus_max (list): Max bounds for non-Gaussian priors.
+        non_gaus_min (list): Min bounds for non-Gaussian priors.
+        theta_ranges (list): Discretized value ranges for each free parameter.
     """
+
     def __init__(self, nplanets_ttvs, nplanets_rvs, orbital_elements, theta=None):
         """
+        Initialize a PlanetarySystem with TTV/RV counts and orbital element priors.
 
         Args:
-            nplanets_ttvs (int): The number of planets to fit to the ttv data
-            nplanets_rvs (int): The number of planets to fit to the rv data
-            orbital_elements (dict): A dictionary of the orbital elements of each planet.
-                Please see the README for advice on the structure of this argument
-            theta (list): A list of orbital elements (typically generated within an MCMC run)
-                It is recommended to only define theta here if you want to evaluate previously fitted results
+            nplanets_ttvs (int): Number of planets using TTV observations.
+            nplanets_rvs (int): Number of planets using RV observations.
+            orbital_elements (dict): Dictionary where keys are parameter labels and values are:
+                - [value] for fixed
+                - [min, max] for uniform prior
+                - [mu, sigma, dummy] for Gaussian prior
+            theta (list, optional): Previously fit parameter vector, for evaluation purposes.
         """
         self.orbital_elements = orbital_elements
         self.nplanets_rvs = nplanets_rvs
         self.nplanets_ttvs = nplanets_ttvs
+        self.theta = theta if isinstance(theta, list) else None
 
-        if type(theta) == list:
-            self.theta = theta
+        # Internal configuration lists
+        p0 = []                  # Starting parameters
+        fixed = []              # Fixed parameter values
+        theta_min = []          # Lower bounds
+        theta_max = []          # Upper bounds
+        variable_labels = []    # Labels for sampled params
+        fixed_labels = []       # Labels for fixed params
+        sigma = []              # Stddev for Gaussian priors
+        mu = []                 # Mean for Gaussian priors
+        index = []              # Index mapping for Gaussian priors
+        non_gaus = []           # Flat and fixed priors
+        non_gaus_max = []       # Max values for flat/fixed
+        non_gaus_min = []       # Min values for flat/fixed
+        theta_ranges = []       # Discretized ranges (200 pts each)
 
-        orbital_elements = self.orbital_elements
-        p0 = []
-        fixed = []
-        theta_min = []
-        theta_max = []
-        variable_labels = []
-        fixed_labels = []
-        sigma = []
-        mu = []
-        index = []
-        non_gaus = []
-        non_gaus_max = []
-        non_gaus_min = []
-        theta_ranges = []
-        k = 0
+        k = 0  # Offset counter for fixed parameters (used in Gaussian index mapping)
 
-        for i in orbital_elements:
-            element = orbital_elements[i]
-            # List of length 1 == fixed param
+        for key in orbital_elements:
+            element = orbital_elements[key]
+
+            # Fixed parameter
             if len(element) == 1:
-                fixed_labels.append(str(i))
+                fixed_labels.append(str(key))
+                val = element[0]
+                fixed.append(val)
+                non_gaus.append(val)
+                non_gaus_max.append(val + val / 1e9)
+                non_gaus_min.append(val - val / 1e9)
                 k += 1
-                fixed.append(element[0])
-                non_gaus.append(element[0])
-                non_gaus_max.append(element[0] + element[0] / 1.e9)
-                non_gaus_min.append(element[0] - element[0] / 1.e9)
-            # List of length 2 == flat params
-            if len(element) == 2:
-                minimum = element[0]
-                maximum = element[1]
+
+            # Uniform prior (flat)
+            elif len(element) == 2:
+                minimum, maximum = element
                 options = linspace(minimum, maximum, 200)
                 theta_ranges.append(options)
                 theta_min.append(minimum)
                 theta_max.append(maximum)
                 p0.append(random.choice(options))
-                variable_labels.append(str(i))
+                variable_labels.append(str(key))
                 non_gaus.append(element)
                 non_gaus_max.append(maximum)
                 non_gaus_min.append(minimum)
-            # List of length 3 == gaussian params
-            if len(element) == 3:
-                index.append((i - k) + (len(orbital_elements)))
+
+            # Gaussian prior
+            elif len(element) == 3:
                 mu.append(element[0])
                 sigma.append(element[1])
+                # Indexing adjusted to place Gaussian params after non-Gaussian
+                index.append((len(p0) - k) + len(orbital_elements))
 
+        # Store attributes
         self.p0 = p0
         self.ndim = len(p0)
         self.fixed = fixed
