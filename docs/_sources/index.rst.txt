@@ -11,6 +11,7 @@ Welcome to exohammer's documentation!
    :caption: Contents:
 
    usage
+   modules
 
 
 Indices and tables

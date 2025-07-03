@@ -1,0 +1,356 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>exohammer.mcmc_run &mdash; exohammer 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="canonical" href="https://nick-juliano.github.io/exohammer/_modules/exohammer/mcmc_run.html" />
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=2389946f"></script>
+      <script src="../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            exohammer
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Exohammer Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">Exohammer API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">exohammer</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">exohammer.mcmc_run</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for exohammer.mcmc_run</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">os</span><span class="w"> </span><span class="kn">import</span> <span class="n">path</span><span class="p">,</span> <span class="n">makedirs</span><span class="p">,</span> <span class="n">getcwd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">perf_counter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">argmax</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">emcee</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">corner</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">exohammer.system</span><span class="w"> </span><span class="kn">import</span> <span class="n">System</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">exohammer.store</span><span class="w"> </span><span class="kn">import</span> <span class="n">StoreRun</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">exohammer.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">sampler_to_theta_max</span><span class="p">,</span> <span class="n">bic</span><span class="p">,</span> <span class="n">plot_rvs</span><span class="p">,</span> <span class="n">plot_ttvs</span>
+
+
+<div class="viewcode-block" id="MCMCRun"><a class="viewcode-back" href="../../modules.html#exohammer.mcmc_run.MCMCRun">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">MCMCRun</span><span class="p">:</span>
+	<span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">planetary_system</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">lnprob</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">		</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		The MCMCRun object</span>
+
+<span class="sd">		Args:</span>
+<span class="sd">			planetary_system (object): A `PlanetarySystem` object</span>
+<span class="sd">			data (object): a `Data` object</span>
+<span class="sd">			lnprob (function): The probability function for your ensemble sampler. By default,</span>
+<span class="sd">				this is set to `None` and the probability function is initialized internally.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">date</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">date</span><span class="p">())</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">time</span><span class="p">())[:</span><span class="o">-</span><span class="mi">7</span><span class="p">]</span>
+		<span class="n">output_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">getcwd</span><span class="p">())</span> <span class="o">+</span> <span class="s2">&quot;/Output/&quot;</span><span class="p">)</span>
+		<span class="n">testdir</span> <span class="o">=</span> <span class="n">output_path</span> <span class="o">+</span> <span class="s1">&#39;run_&#39;</span> <span class="o">+</span> <span class="n">date</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">testdir</span><span class="p">):</span>
+			<span class="n">makedirs</span><span class="p">(</span><span class="n">testdir</span><span class="p">)</span>
+		<span class="n">output_path</span> <span class="o">=</span> <span class="n">output_path</span> <span class="o">+</span> <span class="s1">&#39;run_&#39;</span> <span class="o">+</span> <span class="n">date</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">output_path</span> <span class="o">=</span> <span class="n">output_path</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">=</span> <span class="n">date</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">system</span> <span class="o">=</span> <span class="n">System</span><span class="p">(</span><span class="n">planetary_system</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="n">lnprob</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">lnprob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">lnprob</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">lnprob</span> <span class="o">=</span> <span class="n">lnprob</span>
+
+<div class="viewcode-block" id="MCMCRun.explore_iteratively"><a class="viewcode-back" href="../../modules.html#exohammer.mcmc_run.MCMCRun.explore_iteratively">[docs]</a>	<span class="k">def</span><span class="w"> </span><span class="nf">explore_iteratively</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+	                        <span class="n">total_iterations</span><span class="p">,</span>
+	                        <span class="n">checkpoints</span><span class="p">,</span>
+	                        <span class="n">burnin_factor</span><span class="o">=</span><span class="mf">.2</span><span class="p">,</span>
+	                        <span class="n">thinning_factor</span><span class="o">=</span><span class="mf">.001</span><span class="p">,</span>
+	                        <span class="n">moves</span><span class="o">=</span><span class="n">emcee</span><span class="o">.</span><span class="n">moves</span><span class="o">.</span><span class="n">DEMove</span><span class="p">(</span><span class="n">live_dangerously</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+	                        <span class="n">nwalkers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+	                        <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+	                        <span class="n">tune</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+	                        <span class="n">silent</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">		</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		The primary method for running an MCMC sampler.</span>
+
+<span class="sd">		Args:</span>
+<span class="sd">			total_iterations (int): The total number of steps to advance your chains</span>
+<span class="sd">			checkpoints (int): At this number of steps, the run will save your run for incremental evaluation</span>
+<span class="sd">			burnin_factor (float): A normalized percentage of the run to discard as burn in. Note that</span>
+<span class="sd">				the entire chain is saved in memory and `burnin_factor` adjusts the burn in value</span>
+<span class="sd">				at each checkpoint.</span>
+<span class="sd">			thinning_factor (float): A normalized percentage of the run to thin the entire run by. Useful</span>
+<span class="sd">				for production-length runs where the chains must take &gt;10^7 steps. Must be at most 1% of</span>
+<span class="sd">				`burnin_factor`</span>
+<span class="sd">			moves (object): The type of moves for the Ensemble Sampler to generate.</span>
+<span class="sd">				See https://emcee.readthedocs.io/en/stable/tutorials/moves/ for more information</span>
+<span class="sd">			nwalkers (int): If you wish to specify the number of walkers in your ensemble, define this value</span>
+<span class="sd">				Otherwise, the default will be the closest even value of 3 times the number dimensions.</span>
+<span class="sd">			verbose (bool): Whether to display a generic tqdm progress bar for your run.</span>
+<span class="sd">			tune (bool): Passed directly into emcee.EnsembleSampler.sample. It is highly recommended that this</span>
+<span class="sd">				value remain `True`</span>
+<span class="sd">			silent (bool): Whether to display your plots in your IDE or not. Useful for testing,</span>
+<span class="sd">				but this should be set to `False` during production runs.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">walk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">ndim</span> <span class="o">*</span> <span class="mi">3</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="n">nwalkers</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">nwalkers</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">walk</span><span class="p">)</span> <span class="k">if</span> <span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">walk</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">walk</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">nwalkers</span> <span class="o">=</span> <span class="n">nwalkers</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">niter</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">checkpoints</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">moves</span> <span class="o">=</span> <span class="n">moves</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">burnin_factor</span> <span class="o">=</span> <span class="n">burnin_factor</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">thinning_factor</span> <span class="o">=</span> <span class="n">thinning_factor</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">discard</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">niter</span> <span class="o">*</span> <span class="n">burnin_factor</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">thin</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">niter</span> <span class="o">*</span> <span class="n">thinning_factor</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">tune</span> <span class="o">=</span> <span class="n">tune</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">silent</span> <span class="o">=</span> <span class="n">silent</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">total_iterations</span> <span class="o">=</span> <span class="n">total_iterations</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">initial_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nwalkers</span><span class="p">)</span>
+
+		<span class="n">sampler</span> <span class="o">=</span> <span class="n">emcee</span><span class="o">.</span><span class="n">EnsembleSampler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nwalkers</span><span class="p">,</span>
+		                                <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">ndim</span><span class="p">,</span>
+		                                <span class="bp">self</span><span class="o">.</span><span class="n">lnprob</span><span class="p">,</span>
+		                                <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">],</span>
+		                                <span class="n">moves</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">moves</span><span class="p">,</span>
+		                                <span class="n">live_dangerously</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+		<span class="n">nrepeat</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">total_iterations</span> <span class="o">/</span> <span class="n">checkpoints</span><span class="p">)</span>
+		<span class="n">completed</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
+
+		<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nrepeat</span><span class="p">):</span>
+			<span class="n">tic</span> <span class="o">=</span> <span class="n">perf_counter</span><span class="p">()</span>
+			<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Steps completed: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">completed</span><span class="p">))</span>
+			<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Run &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; of &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nrepeat</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">checkpoints</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; steps&quot;</span><span class="p">)</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">sampler</span> <span class="o">=</span> <span class="n">sampler</span>
+			<span class="n">pos</span><span class="p">,</span> <span class="n">prob</span><span class="p">,</span> <span class="n">state</span> <span class="o">=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">run_mcmc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span>
+			                                    <span class="n">checkpoints</span><span class="p">,</span>
+			                                    <span class="n">progress</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+			                                    <span class="n">tune</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tune</span><span class="p">,</span>
+			                                    <span class="n">skip_initial_state_check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+			<span class="n">toc</span> <span class="o">=</span> <span class="n">perf_counter</span><span class="p">()</span>
+			<span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">toc</span> <span class="o">-</span> <span class="n">tic</span><span class="p">)</span>
+			<span class="nb">print</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
+			<span class="n">sampler_to_theta_max</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+			<span class="n">bic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">pos</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">prob</span> <span class="o">=</span> <span class="n">prob</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">state</span>
+			<span class="n">run</span> <span class="o">=</span> <span class="bp">self</span>
+			<span class="n">store</span> <span class="o">=</span> <span class="n">StoreRun</span><span class="p">(</span><span class="n">run</span><span class="p">)</span>
+			<span class="n">store</span><span class="o">.</span><span class="n">store_csvs</span><span class="p">()</span>
+			<span class="n">run</span><span class="o">.</span><span class="n">plot_chains</span><span class="p">()</span>
+			<span class="n">run</span><span class="o">.</span><span class="n">autocorr</span><span class="p">()</span>
+			<span class="n">run</span><span class="o">.</span><span class="n">plot_ttvs</span><span class="p">()</span>
+			<span class="n">run</span><span class="o">.</span><span class="n">plot_rvs</span><span class="p">()</span>
+			<span class="n">run</span><span class="o">.</span><span class="n">summarize</span><span class="p">()</span>
+			<span class="n">run</span><span class="o">.</span><span class="n">plot_corner</span><span class="p">()</span>
+			<span class="n">sampler_to_theta_max</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">niter</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">checkpoints</span><span class="p">)</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">discard</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">niter</span> <span class="o">*</span> <span class="n">burnin_factor</span><span class="p">)</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">thin</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">niter</span> <span class="o">*</span> <span class="n">thinning_factor</span><span class="p">)</span>
+			<span class="n">completed</span> <span class="o">+=</span> <span class="n">checkpoints</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Run complete&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MCMCRun.plot_corner"><a class="viewcode-back" href="../../modules.html#exohammer.mcmc_run.MCMCRun.plot_corner">[docs]</a>	<span class="k">def</span><span class="w"> </span><span class="nf">plot_corner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">		</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a corner plot and optionally saves it to the output path.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        samples : list</span>
+<span class="sd">            Samples from an MCMCRun.explore() run.</span>
+<span class="sd">            It is recommended to keep samples=None unless you are</span>
+<span class="sd">            attempting to plot a poorly-pickled previous run.</span>
+<span class="sd">        save : bool</span>
+<span class="sd">            If True, saves the corner plot to the run&#39;s output path.</span>
+
+<span class="sd">		Args:</span>
+<span class="sd">			samples (list): Samples from an MCMCRun.explore() run. It is recommended to keep samples=None unless you</span>
+<span class="sd">				have explicit reason to do otherwise.</span>
+<span class="sd">			save (bool): If True, saves the corner plot to the run&#39;s output path.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+
+		<span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_path</span> <span class="o">+</span> <span class="s2">&quot;corner_&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">+</span> <span class="s1">&#39;.png&#39;</span>
+		<span class="k">if</span> <span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">get_chain</span><span class="p">(</span><span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">discard</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">discard</span><span class="p">,</span> <span class="n">thin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">thin</span><span class="p">)</span>
+		<span class="n">figure</span> <span class="o">=</span> <span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.16</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.84</span><span class="p">],</span>
+				                       <span class="n">show_titles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+				                       <span class="n">labels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">variable_labels</span><span class="p">,</span>
+									   <span class="n">title_fmt</span> <span class="o">=</span> <span class="s1">&#39;.2e&#39;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+			<span class="n">figure</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">silent</span><span class="p">:</span>
+			<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MCMCRun.plot_chains"><a class="viewcode-back" href="../../modules.html#exohammer.mcmc_run.MCMCRun.plot_chains">[docs]</a>	<span class="k">def</span><span class="w"> </span><span class="nf">plot_chains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">		</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a chain plot and optionally saves it to the output path.</span>
+
+<span class="sd">		Args:</span>
+<span class="sd">			samples (list): Samples from an MCMCRun.explore() run. It is recommended to keep samples=None unless you</span>
+<span class="sd">				have explicit reason to do otherwise.</span>
+<span class="sd">			save (bool): If True, saves the corner plot to the run&#39;s output path.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+
+		<span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_path</span> <span class="o">+</span> <span class="s2">&quot;Chains_&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">+</span> <span class="s1">&#39;.png&#39;</span>
+		<span class="k">if</span> <span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="n">samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">get_chain</span><span class="p">(</span><span class="n">discard</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">discard</span><span class="p">,</span> <span class="n">thin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">thin</span><span class="p">)</span>
+		<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">variable_labels</span><span class="p">),</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+		<span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s1">&#39;chains&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+		<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">variable_labels</span><span class="p">)):</span>
+			<span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+			<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">samples</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">],</span> <span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+			<span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">))</span>
+			<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">variable_labels</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+			<span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_label_coords</span><span class="p">(</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+			<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+		<span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">silent</span><span class="p">:</span>
+			<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MCMCRun.plot_rvs"><a class="viewcode-back" href="../../modules.html#exohammer.mcmc_run.MCMCRun.plot_rvs">[docs]</a>	<span class="k">def</span><span class="w"> </span><span class="nf">plot_rvs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">		</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Plot RVs</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+
+		<span class="n">__</span><span class="p">,</span> <span class="n">__</span><span class="p">,</span> <span class="n">rv_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">)</span>
+		<span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_path</span> <span class="o">+</span> <span class="s2">&quot;rvs_&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">+</span> <span class="s1">&#39;.png&#39;</span>
+		<span class="n">plot_rvs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">rvbjd</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">rvmnvel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">rverrvel</span><span class="p">,</span> <span class="n">rv_model</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">silent</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MCMCRun.plot_ttvs"><a class="viewcode-back" href="../../modules.html#exohammer.mcmc_run.MCMCRun.plot_ttvs">[docs]</a>	<span class="k">def</span><span class="w"> </span><span class="nf">plot_ttvs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">		</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Plot TTVs</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+
+		<span class="n">nplanets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">nplanets_ttvs</span>
+		<span class="n">measured</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">measured</span>
+		<span class="n">epoch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">epoch</span>
+		<span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">error</span>
+		<span class="n">mod</span><span class="p">,</span> <span class="n">model_epoch</span><span class="p">,</span> <span class="n">__</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">)</span>
+		<span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_path</span> <span class="o">+</span> <span class="s2">&quot;TTVs_&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">+</span> <span class="s1">&#39;.png&#39;</span>
+		<span class="n">plot_ttvs</span><span class="p">(</span><span class="n">nplanets</span><span class="p">,</span> <span class="n">measured</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">model_epoch</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">silent</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MCMCRun.autocorr"><a class="viewcode-back" href="../../modules.html#exohammer.mcmc_run.MCMCRun.autocorr">[docs]</a>	<span class="k">def</span><span class="w"> </span><span class="nf">autocorr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">		</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Evaluate the autocorrelation of the run and save this evaluation to the output folder</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+
+		<span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_path</span> <span class="o">+</span> <span class="s2">&quot;autocor_&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">+</span> <span class="s1">&#39;.txt&#39;</span>
+		<span class="k">try</span><span class="p">:</span>
+			<span class="n">tau</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">get_autocorr_time</span><span class="p">(</span><span class="n">discard</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">discard</span><span class="p">)</span>
+		<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+			<span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+			<span class="n">tau</span> <span class="o">=</span> <span class="n">e</span>
+		<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+			<span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">tau</span><span class="p">))</span>
+		<span class="k">return</span> <span class="n">tau</span></div>
+
+<div class="viewcode-block" id="MCMCRun.summarize"><a class="viewcode-back" href="../../modules.html#exohammer.mcmc_run.MCMCRun.summarize">[docs]</a>	<span class="k">def</span><span class="w"> </span><span class="nf">summarize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">		</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		Summarize the current status of the run in a text file saved in the output folder.</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+
+		<span class="n">space</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+
+<span class="s2">		&quot;&quot;&quot;</span>
+		<span class="n">summary</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">				nwalkers: </span><span class="si">%i</span><span class="s2"> walkers</span>
+<span class="s2">				niter_total: </span><span class="si">%i</span><span class="s2"> total iterations  </span>
+<span class="s2">				nburnin: </span><span class="si">%i</span>
+<span class="s2">				The resulting chain was thinned by a factor of </span><span class="si">%i</span>
+<span class="s2">				The bic is: </span><span class="si">%i</span>
+<span class="s2">				The max lnprob is </span><span class="si">%i</span>
+<span class="s2">				The resultant orbital elements are below:</span>
+<span class="s2">		        &quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nwalkers</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">niter</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">discard</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">thin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bic</span><span class="p">,</span> <span class="n">argmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">get_log_prob</span><span class="p">(</span><span class="n">flat</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">thin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">thin</span><span class="p">)))</span>
+		<span class="n">run_description</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_path</span> <span class="o">+</span> <span class="s2">&quot;/run_description_&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">+</span> <span class="s2">&quot;.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;w+&quot;</span><span class="p">)</span>
+		<span class="n">run_description</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+		<span class="n">run_description</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">space</span><span class="p">)</span>
+		<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">variable_labels</span><span class="p">)):</span>
+			<span class="n">run_description</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">variable_labels</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">theta_max</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+			<span class="n">run_description</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">space</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Nick Juliano.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
